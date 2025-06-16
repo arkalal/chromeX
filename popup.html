@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Text Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <div class="header">
+      <h1>AI Text Assistant</h1>
+    </div>
+    
+    <div class="content">
+      <div class="api-key-section" id="api-key-section">
+        <h2>Configure OpenAI API Key</h2>
+        <p>Enter your OpenAI API key to enable AI text features:</p>
+        <div class="input-group">
+          <input type="password" id="api-key-input" placeholder="sk-...">
+          <button id="save-api-key">Save</button>
+        </div>
+        <div class="api-status" id="api-status"></div>
+      </div>
+      
+      <div class="features-section">
+        <h2>Features</h2>
+        <div class="feature">
+          <div class="feature-icon">✏️</div>
+          <div class="feature-content">
+            <h3>Write</h3>
+            <p>Generate new text based on your instructions</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">🔄</div>
+          <div class="feature-content">
+            <h3>Refine</h3>
+            <p>Improve your existing text</p>
+          </div>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">✨</div>
+          <div class="feature-content">
+            <h3>Restyle</h3>
+            <p>Change the tone or style of your text</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="how-to-use">
+        <h2>How to Use</h2>
+        <ol>
+          <li>Click on any text input field</li>
+          <li>Look for the AI button that appears</li>
+          <li>Choose an AI operation</li>
+          <li>Enter your instructions</li>
+          <li>Apply the generated text</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>Powered by OpenAI GPT-4o</p>
+    </div>
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html>
