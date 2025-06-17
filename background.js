@@ -1,6 +1,7 @@
 // Background service worker for handling API calls to OpenAI
 
-let apiKey = '';
+// Project API key - directly using the project API key without requiring user input
+let apiKey = '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';
 
 // Listen for messages from content script or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -24,26 +25,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true;
   }
   
-  if (request.action === 'getApiKey') {
-    chrome.storage.local.get('apiKey', (result) => {
-      sendResponse({ apiKey: result.apiKey || '' });
-    });
+  if (request.action === 'getApiKey' || request.action === 'getOpenAIKey') {
+    // Return the built-in API key immediately
+    sendResponse({ apiKey: apiKey });
     return true;
   }
 });
 
-// Load API key when background script initializes
-chrome.storage.local.get('apiKey', (result) => {
-  if (result.apiKey) {
-    apiKey = result.apiKey;
-  }
-});
+// Using built-in project API key - no need to load from storage
 
 // Generate text using OpenAI API
 async function generateText(instruction, originalText = '') {
-  if (!apiKey) {
-    throw new Error('OpenAI API key not set. Please configure it in the extension settings.');
-  }
+  // API key is now always available
   
   let prompt = '';
   
