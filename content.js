@@ -860,28 +860,32 @@ The subject line must be on its own line starting with SUBJECT: followed by a bl
     
     console.log('Sending request to OpenAI:', { tone, promptLength: prompt.length });
     
-    // Make the API call
+    // Request data for the OpenAI API
+    const requestData = {
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: `You are an AI writing assistant helping with email composition.`
+        },
+        {
+          role: 'user',
+          content: `${tone ? `Write in a ${tone} tone: ` : ''}${prompt}`
+        }
+      ],
+      stream: true,
+      temperature: 0.7
+    };
+
+    // Make the API call through the background script for security
+    // The background script handles the API key from environment variables
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: systemContent
-          },
-          {
-            role: 'user',
-            content: userPrompt
-          }
-        ],
-        temperature: 0.7,
-        stream: true
-      }),
+      body: JSON.stringify(requestData),
       signal
     });
     
@@ -1423,27 +1427,31 @@ The SUBJECT line MUST be on its own line starting with SUBJECT: followed by a bl
       overlay.querySelector('.generating-text').textContent = 'Generating email template...';
     }
     
+    // Prepare request data for the OpenAI API
+    const requestData = {
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: systemMessage
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      stream: true
+    };
+    
     // Call the OpenAI API with streaming enabled
+    // The API key is securely fetched from the background script which gets it from environment variables
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: systemMessage
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        stream: true
-      }),
+      body: JSON.stringify(requestData),
       signal: signal
     });
     
@@ -1654,11 +1662,16 @@ function createGenerationOverlay(composeBox) {
   return overlay;
 }
 
-// Get the OpenAI API key from Chrome storage
+// Get the OpenAI API key from the background script (sourced from .env)
 async function getOpenAIKey() {
   return new Promise((resolve) => {
-    chrome.storage.local.get(['openaiApiKey'], (result) => {
-      resolve(result.openaiApiKey || '');
+    chrome.runtime.sendMessage({ action: 'getOpenAIKey' }, (response) => {
+      if (response && response.apiKey) {
+        resolve(response.apiKey);
+      } else {
+        console.error('Failed to get API key from background script');
+        resolve('');
+      }
     });
   });
 }
@@ -1921,25 +1934,29 @@ async function applyToneAdjustment(composeBox, toneInstruction) {
     // Setup the prompt
     const prompt = `I have an email that I want you to rewrite with a different tone. ${toneInstruction}. Keep the same information and message intent. Here's the email:\n\n${currentContent}`;
     
+    // Prepare request data for the OpenAI API
+    const requestData = {
+      model: 'gpt-4o',
+      messages: [{
+        role: 'system',
+        content: 'You are an expert email editor who specializes in tone adjustment. Keep the same information and core message but adjust the style and tone as requested.'
+      }, {
+        role: 'user',
+        content: prompt
+      }],
+      temperature: 0.7,
+      stream: true
+    };
+    
     // Call the OpenAI API with streaming enabled
+    // The API key is securely fetched from the background script which gets it from environment variables
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [{
-          role: 'system',
-          content: 'You are an expert email editor who specializes in tone adjustment. Keep the same information and core message but adjust the style and tone as requested.'
-        }, {
-          role: 'user',
-          content: prompt
-        }],
-        temperature: 0.7,
-        stream: true
-      }),
+      body: JSON.stringify(requestData),
       signal: signal
     });
     

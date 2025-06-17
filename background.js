@@ -1,7 +1,36 @@
 // Background service worker for handling API calls to OpenAI
 
-// Project API key - directly using the project API key without requiring user input
-let apiKey = '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';
+// Get API key from environment variables during build process
+// IMPORTANT: The actual value will be injected during build time from .env
+const apiKey = process.env.OPENAI_API_KEY || '';
+
+// Function to make secure API calls to OpenAI
+async function callOpenAI(requestData) {
+  try {
+    if (!apiKey) {
+      throw new Error('API key not configured');
+    }
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(requestData)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || `API error: ${response.status}`);
+    }
+    
+    return response;
+  } catch (error) {
+    console.error('Error calling OpenAI API:', error);
+    throw error;
+  }
+}
 
 // Listen for messages from content script or popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -17,17 +46,31 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Indicates we will call sendResponse asynchronously
   }
   
-  if (request.action === 'saveApiKey') {
-    chrome.storage.local.set({ apiKey: request.apiKey }, () => {
-      apiKey = request.apiKey;
-      sendResponse({ success: true });
-    });
+  if (request.action === 'callOpenAI') {
+    // Handle OpenAI API calls securely from the background script
+    callOpenAI(request.requestData)
+      .then(async response => {
+        // If it's a streaming request, we need to send the readable stream back differently
+        if (request.streaming) {
+          // For streaming, we return just successful response status
+          // The content script will handle its own fetch with the API key
+          sendResponse({ success: true });
+        } else {
+          // For regular requests, return the full response data
+          const data = await response.json();
+          sendResponse({ data });
+        }
+      })
+      .catch(error => {
+        console.error('Error in callOpenAI:', error);
+        sendResponse({ error: error.message || 'API call failed' });
+      });
     return true;
   }
   
   if (request.action === 'getApiKey' || request.action === 'getOpenAIKey') {
     // Return the built-in API key immediately
-    sendResponse({ apiKey: apiKey });
+    sendResponse({ apiKey });
     return true;
   }
 });
