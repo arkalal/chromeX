@@ -1,0 +1,379 @@
+.howItWorks {
+  padding: 6rem 0;
+  background-color: var(--background-light);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background-image: linear-gradient(to right, transparent, var(--border-divider), transparent);
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 4rem;
+
+    h2 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: inline-block;
+
+      @media (max-width: 768px) {
+        font-size: 2rem;
+      }
+    }
+
+    p {
+      font-size: 1.125rem;
+      max-width: 600px;
+      margin: 0 auto;
+      color: var(--text-secondary);
+    }
+  }
+
+  .stepsContainer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    align-items: center;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .stepsNav {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .stepButton {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid var(--border-divider);
+    background-color: var(--card-surface);
+    text-align: left;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--primary-color);
+      transform: translateY(-2px);
+    }
+
+    &.active {
+      border-color: var(--primary-color);
+      box-shadow: 0 12px 24px -8px rgba(79, 70, 229, 0.2);
+      transform: translateY(-2px);
+      
+      .stepNumber {
+        background-color: var(--primary-color);
+        color: white;
+      }
+      
+      h3 {
+        color: var(--primary-color);
+      }
+
+      .stepIcon {
+        opacity: 1;
+        transform: translateX(0);
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background-color: var(--primary-color);
+      }
+    }
+  }
+
+  .stepNumber {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(79, 70, 229, 0.1);
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+  }
+
+  .stepContent {
+    flex: 1;
+    
+    h3 {
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      transition: all 0.3s ease;
+    }
+    
+    p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+  }
+
+  .stepIcon {
+    font-size: 1.25rem;
+    color: var(--primary-color);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.3s ease;
+  }
+
+  .stepVisual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    
+    @media (max-width: 1024px) {
+      margin-top: 2rem;
+    }
+  }
+
+  .stepImageContainer {
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+  }
+
+  .stepImagePlaceholder {
+    width: 100%;
+    position: relative;
+  }
+
+  /* Browser mockup styling */
+  .mockupBrowser {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background-color: white;
+  }
+
+  .mockupHeader {
+    background-color: #f5f5f7;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .mockupControls {
+    display: flex;
+    align-items: center;
+    margin-right: 1rem;
+
+    span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      
+      &:nth-child(1) {
+        background-color: #ff5f57;
+      }
+      
+      &:nth-child(2) {
+        background-color: #ffbd2e;
+      }
+      
+      &:nth-child(3) {
+        background-color: #28c940;
+      }
+    }
+  }
+
+  .mockupAddress {
+    flex: 1;
+    background-color: white;
+    border-radius: 50px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .mockupContent {
+    padding: 2rem;
+    min-height: 350px;
+    position: relative;
+  }
+
+  .extensionCard {
+    display: flex;
+    padding: 1.5rem;
+    border: 1px solid var(--border-divider);
+    border-radius: 12px;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+
+  .extensionIcon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(to right bottom, var(--primary-color), var(--accent-color));
+    border-radius: 8px;
+    margin-right: 1rem;
+    position: relative;
+
+    &::after {
+      content: 'ChromeX';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.6rem;
+      color: white;
+      font-weight: 700;
+    }
+  }
+
+  .extensionInfo {
+    flex: 1;
+    margin-right: 1rem;
+  }
+
+  .extensionTitle {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+    color: var(--text-primary);
+  }
+
+  .extensionRating {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+
+    .stars {
+      color: #ffbd2e;
+      margin-right: 0.5rem;
+    }
+
+    span {
+      color: var(--text-secondary);
+    }
+  }
+
+  .installBtn {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .textFieldHighlight {
+    margin-top: 2rem;
+    height: 100px;
+    border: 2px dashed var(--primary-color);
+    border-radius: 8px;
+    background-color: rgba(79, 70, 229, 0.05);
+    animation: pulse 1.5s infinite alternate;
+    position: relative;
+
+    &::after {
+      content: 'Click here to write';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--text-secondary);
+      font-style: italic;
+      font-size: 0.95rem;
+    }
+  }
+
+  .aiAssistant {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 250px;
+    height: 150px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--border-divider);
+    animation: slideUp 0.5s ease-in-out forwards;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 30px;
+      background-color: var(--primary-color);
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+
+    &::after {
+      content: 'ChromeX is writing...';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+  }
+
+  .noteSaved {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 200px;
+    padding: 0.75rem;
+    background-color: var(--success-color);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    animation: fadeIn 0.5s ease-in-out forwards;
+
+    &::before {
+      content: '✓ Note saved successfully!';
+      display: block;
+      font-weight: 600;
+    }
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
