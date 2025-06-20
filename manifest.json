@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "AI Text Assistant",
+  "name": "ChromeX",
   "version": "1.0.0",
   "description": "Enhance your writing with AI across any website",
   "permissions": [
@@ -8,6 +8,10 @@
     "storage",
     "scripting"
   ],
+  "web_accessible_resources": [{
+    "resources": ["styles/*.css"],
+    "matches": ["<all_urls>"]
+  }],
   "host_permissions": [
     "<all_urls>"
   ],

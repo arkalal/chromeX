@@ -7,6 +7,9 @@ let selectedInputElement = null; // Track the currently selected input element
 let lastFocusedElement = null; // Keep track of the last focused input element
 let lastSelectedInputElementPath = null; // Path to restore an element if it disappears from DOM
 
+// Import Gmail Refine module
+import { initGmailRefine } from './src/modules/gmail-refine/index.js';
+
 // Initialize the content script - specialized for Gmail integration
 function initialize() {
   // Only run on Gmail
@@ -17,6 +20,9 @@ function initialize() {
     // Initialize Gmail integration
     setupEventListeners();
     setupGmailComposeObserver();
+    
+    // Initialize Gmail refine functionality
+    initGmailRefine();
   }
 }
 

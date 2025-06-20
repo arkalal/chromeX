@@ -1,0 +1,254 @@
+/**
+ * Gmail Refine UI Styles 
+ * Following ChromeX design system
+ */
+
+/* Refine Button */
+.chromex-refine-button {
+  background-color: transparent;
+  color: #4F46E5; /* Indigo 600 - primary color */
+  border: 1px solid #4F46E5;
+  border-radius: 8px; /* rounded-2xl */
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  margin: 8px 0;
+  transition: all 0.2s ease-in-out;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.chromex-refine-button:hover {
+  background-color: rgba(79, 70, 229, 0.1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Modal */
+.chromex-refine-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.chromex-refine-modal-content {
+  background-color: #FFFFFF; /* Card Surface white */
+  padding: 24px;
+  border-radius: 16px; /* rounded-2xl */
+  width: 600px;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  font-family: 'Inter', sans-serif;
+}
+
+/* Modal Header */
+.chromex-refine-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #E5E7EB; /* Border/Divider color */
+  padding-bottom: 16px;
+}
+
+.chromex-refine-logo {
+  font-size: 20px;
+  font-weight: bold;
+  color: #4F46E5; /* Primary color */
+}
+
+.chromex-refine-tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.chromex-tab {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.chromex-tab.active {
+  background-color: #4F46E5; /* Primary color */
+  color: white;
+}
+
+.chromex-tab:not(.active) {
+  background-color: white;
+  color: #6B7280; /* Text Secondary */
+}
+
+.chromex-tab:hover:not(.active) {
+  background-color: #F9FAFB; /* Background Light */
+}
+
+/* Modal Body */
+.chromex-refine-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+/* Email Textarea */
+.chromex-email-content {
+  width: 100%;
+  min-height: 200px;
+  padding: 12px;
+  border: 1px solid #E5E7EB; /* Border/Divider color */
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 16px;
+  resize: vertical;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #111827; /* Text Primary */
+}
+
+.chromex-email-content:focus {
+  outline: none;
+  border-color: #4F46E5; /* Primary color */
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+/* Tone Options */
+.chromex-tone-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.chromex-tone-option {
+  padding: 8px 16px;
+  background-color: white;
+  border: 1px solid #E5E7EB; /* Border/Divider color */
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+}
+
+.chromex-tone-option:hover:not(.active) {
+  border-color: #4F46E5; /* Primary color */
+  color: #4F46E5;
+}
+
+.chromex-tone-option.active {
+  background-color: #4F46E5; /* Primary color */
+  border-color: #4F46E5;
+  color: white;
+}
+
+/* Prompt Input */
+.chromex-prompt-container {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.chromex-prompt-container label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #111827; /* Text Primary */
+  font-size: 14px;
+}
+
+.chromex-prompt-input {
+  width: 100%;
+  height: 80px;
+  padding: 12px;
+  border: 1px solid #E5E7EB; /* Border/Divider color */
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  resize: vertical;
+  font-size: 14px;
+}
+
+.chromex-prompt-input:focus {
+  outline: none;
+  border-color: #4F46E5; /* Primary color */
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+/* Action Buttons */
+.chromex-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.chromex-cancel-button {
+  padding: 8px 16px;
+  background-color: white;
+  border: 1px solid #E5E7EB; /* Border/Divider color */
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.chromex-cancel-button:hover {
+  border-color: #6B7280; /* Text Secondary */
+  background-color: #F9FAFB; /* Background Light */
+}
+
+.chromex-action-button,
+.chromex-apply-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.chromex-action-button {
+  background-color: #4F46E5; /* Primary color */
+  color: white;
+}
+
+.chromex-apply-button {
+  background-color: #F97316; /* Accent/CTA color */
+  color: white;
+}
+
+.chromex-action-button:hover,
+.chromex-apply-button:hover {
+  filter: brightness(1.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.chromex-action-button:disabled,
+.chromex-apply-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.chromex-loading::after {
+  content: "...";
+  display: inline-block;
+  animation: pulse 1.5s ease-in-out infinite;
+}
