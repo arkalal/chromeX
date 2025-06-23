@@ -13,12 +13,16 @@ const TONE_OPTIONS = [
 ];
 
 /**
- * Parse Gmail content to preserve paragraph structure
+ * Parse Gmail content to preserve paragraph structure with special handling for signatures
  * @param {string} content - The raw content from Gmail compose
  * @returns {string} Properly formatted content
  */
 function parseGmailContent(content) {
   if (!content) return '';
+  
+  // Common signature components
+  const signatureMarkers = ['[Your Name]', '[Your Position]', '[Your Contact Information]'];
+  const signatureLineDetectors = ['Best regards', 'Regards', 'Sincerely', 'Thank you', 'Thanks', 'Take care']; 
   
   // Remove any subject line that might have been added to the body
   let parsedContent = content;
@@ -27,22 +31,281 @@ function parseGmailContent(content) {
     parsedContent = parsedContent.replace(subjectMatch[0], '').trim();
   }
   
-  // Create a temporary container to process the HTML content
+  // Create a temporary div to parse HTML content
   const tempDiv = document.createElement('div');
   
-  // Handle case where content might be raw text or HTML
-  if (content.includes('<div>') || content.includes('<br>')) {
+  // Check if content is HTML or plain text 
+  const isHTML = content.includes('<div>') || content.includes('<br>') || content.includes('<p>');
+  
+  if (isHTML) {
     tempDiv.innerHTML = parsedContent;
+    
+    // This will process HTML content more intelligently
+    return processHTMLContentForPopup(tempDiv, signatureMarkers, signatureLineDetectors);
   } else {
-    // Content is likely plain text, convert newlines to proper structure
-    tempDiv.textContent = parsedContent;
-    return parsedContent; // Return as-is for plain text
+    // Content is plain text, needs special handling too
+    return processPlainTextForPopup(parsedContent, signatureMarkers, signatureLineDetectors);
+  }
+}
+
+/**
+ * Process HTML content for proper display in the refine popup
+ * @param {HTMLElement} container - Container with Gmail content
+ * @param {Array} signatureMarkers - Array of signature marker strings
+ * @param {Array} signatureLineDetectors - Array of signature line detector strings
+ * @returns {string} Formatted content for textarea display
+ */
+function processHTMLContentForPopup(container, signatureMarkers, signatureLineDetectors) {
+  // Extract all content into blocks with proper formatting
+  let textBlocks = [];
+  let currentBlock = '';
+  let inSignature = false;
+  
+  // Helper function to detect if text contains any signature markers
+  function isSignatureLine(text) {
+    return signatureMarkers.some(marker => text.includes(marker)) || 
+           signatureLineDetectors.some(detector => text.includes(detector));
   }
   
-  // Extract the content directly from the compose box structure
-  // This better preserves Gmail's original formatting
-  let extractedContent = extractGmailStructure(tempDiv);
-  return extractedContent;
+  // More aggressive signature detection
+  function detectSignatureLine(text) {
+    // Check for exact matches
+    if (signatureMarkers.includes(text.trim()) || 
+        signatureLineDetectors.some(detector => text.trim().startsWith(detector))) {
+      return true;
+    }
+    
+    // Check for signature patterns like "Best, [Name]" or "Your Name" or "Contact: "
+    if (/^(Best|Thanks|Regards|Sincerely|Thank you),?\s*$/.test(text.trim()) || 
+        /Your\s+(Name|Position|Title)/i.test(text) ||
+        /Contact:|Phone:|Email:/i.test(text)) {
+      return true;
+    }
+    
+    return false;
+  }
+  
+  // Process text nodes and handle special DIV structures that Gmail uses
+  function processNodeAndChildren(node, depth = 0) {
+    if (!node) return;
+    
+    // Extract text content from this node
+    if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+      currentBlock += node.textContent;
+      return;
+    }
+    
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      // Handle BR elements - explicit line breaks
+      if (node.nodeName === 'BR') {
+        // Always treat BR as a line break
+        currentBlock += '\n';
+        return;
+      }
+      
+      // Create a new line for DIV and P elements if they contain content
+      if ((node.nodeName === 'DIV' || node.nodeName === 'P') && depth > 0) {
+        // Check if this is an empty div - Gmail uses these for spacing
+        const isEmpty = !node.textContent.trim();
+        
+        if (!isEmpty) {
+          // Detect if this is a signature line
+          const nodeText = node.textContent.trim();
+          const isSignature = detectSignatureLine(nodeText);
+          
+          if (isSignature && !inSignature) {
+            // First signature line - add spacing before signature section
+            inSignature = true;
+            // Complete current block if any
+            if (currentBlock.trim()) {
+              textBlocks.push(currentBlock.trim());
+              currentBlock = '';
+            }
+            // Add an empty line before signature if needed
+            if (textBlocks.length > 0 && textBlocks[textBlocks.length-1] !== '') {
+              textBlocks.push('');
+            }
+          }
+          
+          // Start a new block for significant block elements 
+          // but not if we're in a signature section
+          if (currentBlock.trim() && !inSignature) {
+            textBlocks.push(currentBlock.trim());
+            currentBlock = '';
+          }
+        }
+      }
+      
+      // Process child nodes
+      for (const child of node.childNodes) {
+        processNodeAndChildren(child, depth + 1);
+      }
+      
+      // For block elements that create line breaks
+      if ((node.nodeName === 'DIV' || node.nodeName === 'P') && depth > 0) {
+        // If we're in the main body (not signature), add proper spacing
+        if (!inSignature) {
+          // Add current block if it has content
+          if (currentBlock.trim() && textBlocks.length > 0) {
+            textBlocks.push(currentBlock.trim());
+            currentBlock = '';
+          }
+        } else {
+          // In signature section - ensure each line is on its own line
+          if (currentBlock.trim()) {
+            textBlocks.push(currentBlock.trim());
+            currentBlock = '';
+          }
+        }
+      }
+    }
+  }
+  
+  // Start processing from the container
+  processNodeAndChildren(container);
+  
+  // Add any remaining content
+  if (currentBlock.trim()) {
+    textBlocks.push(currentBlock.trim());
+  }
+  
+  // Filter out empty blocks and ensure proper spacing
+  textBlocks = textBlocks.filter(block => block !== null);
+  
+  // Join blocks with appropriate spacing
+  let result = '';
+  let prevWasSignature = false;
+  
+  for (let i = 0; i < textBlocks.length; i++) {
+    const block = textBlocks[i];
+    const isCurrentSignature = isSignatureLine(block);
+    
+    // Add appropriate spacing
+    if (i > 0) {
+      // Between body paragraphs: double newline
+      // Between signature lines: single newline
+      // Between body and signature: double newline
+      if (prevWasSignature && isCurrentSignature) {
+        // Signature to signature: single newline
+        result += '\n';
+      } else if (!prevWasSignature && !isCurrentSignature) {
+        // Body to body: double newline
+        result += '\n\n';
+      } else {
+        // Transition between body and signature: double newline
+        result += '\n\n';
+      }
+    }
+    
+    // Add the block
+    result += block;
+    prevWasSignature = isCurrentSignature;
+  }
+  
+  return result;
+}
+
+/**
+ * Process plain text content for proper display in the refine popup
+ * @param {string} content - Plain text content
+ * @param {Array} signatureMarkers - Array of signature marker strings
+ * @param {Array} signatureLineDetectors - Array of signature line detector strings
+ * @returns {string} Formatted content for textarea display
+ */
+function processPlainTextForPopup(content, signatureMarkers, signatureLineDetectors) {
+  // Split content into lines
+  const lines = content.split('\n');
+  const formattedLines = [];
+  let inSignature = false;
+  
+  // Helper function to detect signature lines more aggressively
+  function isSignatureLine(text) {
+    // Check for exact matches
+    if (signatureMarkers.includes(text.trim()) || 
+        signatureLineDetectors.some(detector => text.trim().startsWith(detector))) {
+      return true;
+    }
+    
+    // Check for signature patterns like "Best, [Name]" or "Your Name" or "Contact: "
+    if (/^(Best|Thanks|Regards|Sincerely|Thank you),?\s*$/.test(text.trim()) || 
+        /Your\s+(Name|Position|Title)/i.test(text) ||
+        /Contact:|Phone:|Email:/i.test(text)) {
+      return true;
+    }
+    
+    return false;
+  }
+  
+  // First pass: identify signature blocks
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    
+    // Skip empty lines at the start
+    if (line === '' && formattedLines.length === 0) continue;
+    
+    // Detect signature section
+    if (!inSignature && isSignatureLine(line)) {
+      inSignature = true;
+      
+      // Add empty line before signature if needed
+      if (formattedLines.length > 0 && formattedLines[formattedLines.length - 1] !== '') {
+        formattedLines.push('');
+      }
+      
+      formattedLines.push(line);
+      continue;
+    } else if (inSignature) {
+      // Already in signature section
+      if (line !== '') {
+        // For signature lines, we want them on separate lines with no extra space
+        formattedLines.push(line);
+      }
+      continue;
+    }
+    
+    // Normal paragraph handling
+    if (line !== '') {
+      // If this is a new paragraph after a non-empty line, add an empty line
+      if (formattedLines.length > 0 && formattedLines[formattedLines.length - 1] !== '') {
+        formattedLines.push('');
+      }
+      formattedLines.push(line);
+    }
+  }
+  
+  // Second pass: format with appropriate spacing
+  let result = '';
+  let prevWasSignature = false;
+  
+  for (let i = 0; i < formattedLines.length; i++) {
+    const line = formattedLines[i];
+    const isCurrentSignature = inSignature && i >= formattedLines.indexOf('') && isSignatureLine(line);
+    
+    // Add appropriate spacing
+    if (i > 0) {
+      if (line === '') {
+        // Skip empty lines in output
+        continue;
+      } else if (prevWasSignature && isCurrentSignature) {
+        // Signature to signature: single newline
+        result += '\n';
+      } else if (!prevWasSignature && !isCurrentSignature) {
+        // Body to body: double newline
+        result += '\n\n';
+      } else {
+        // Transition between body and signature: double newline
+        result += '\n\n';
+      }
+    }
+    
+    // Add the line
+    if (line !== '') {
+      result += line;
+      prevWasSignature = isCurrentSignature;
+    }
+  }
+  
+  return result;
 }
 
 /**
@@ -51,79 +314,15 @@ function parseGmailContent(content) {
  * @returns {string} Formatted content for textarea display
  */
 function extractGmailStructure(container) {
+  // We don't need this function anymore as it's replaced by processHTMLContentForPopup
+  // But we'll keep a simplified version as a fallback
+  
   // Gmail uses a structure where paragraphs are divs and line breaks are <br> elements
-  // We need to reconstruct this in a way that preserves formatting in a textarea
+  const signatureMarkers = ['[Your Name]', '[Your Position]', '[Your Contact Information]'];
+  const signatureLineDetectors = ['Best regards', 'Regards', 'Sincerely', 'Thank you', 'Thanks', 'Take care'];
   
-  const paragraphs = [];
-  let currentParagraph = '';
-  let previousWasBr = false;
-  let emptyDivCount = 0;
-  
-  // Helper function to process text content from nodes
-  function processTextContent(node) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      return node.textContent;
-    } else if (node.nodeType === Node.ELEMENT_NODE) {
-      // For elements, we need to preserve important formatting
-      if (node.nodeName === 'BR') {
-        return '\n';
-      } else if (node.nodeName === 'DIV' && (!node.textContent.trim() || node.innerHTML === '<br>')) {
-        // Empty div or div with just <br> indicates paragraph break in Gmail
-        emptyDivCount++;
-        return emptyDivCount > 1 ? '\n' : '';  // Only add extra break if multiple empty divs
-      } else {
-        // For other elements, collect their text content recursively
-        let text = '';
-        for (const child of node.childNodes) {
-          text += processTextContent(child);
-        }
-        return text;
-      }
-    }
-    return '';
-  }
-  
-  // Process each direct child of the container (typically div elements in Gmail)
-  for (let i = 0; i < container.childNodes.length; i++) {
-    const node = container.childNodes[i];
-    
-    // Check if this is a block-level element that should create a paragraph break
-    const isBlockElement = node.nodeType === Node.ELEMENT_NODE && 
-                         ['DIV', 'P', 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.nodeName);
-    
-    // If this is a block element and we already have content, start a new paragraph
-    if (isBlockElement && currentParagraph.trim()) {
-      paragraphs.push(currentParagraph.trim());
-      currentParagraph = '';
-      previousWasBr = false;
-      emptyDivCount = 0;
-    }
-    
-    // Process the content of this node
-    const nodeContent = processTextContent(node);
-    
-    // Add the content to the current paragraph
-    currentParagraph += nodeContent;
-    
-    // If this was a block element, prepare for potential paragraph break
-    if (isBlockElement && i < container.childNodes.length - 1) {
-      // Only add paragraph break if there's content
-      if (nodeContent.trim()) {
-        paragraphs.push(currentParagraph.trim());
-        currentParagraph = '';
-        previousWasBr = false;
-        emptyDivCount = 0;
-      }
-    }
-  }
-  
-  // Add the last paragraph if there's content
-  if (currentParagraph.trim()) {
-    paragraphs.push(currentParagraph.trim());
-  }
-  
-  // Join all paragraphs with double newlines
-  return paragraphs.join('\n\n');
+  // Use our new processing function
+  return processHTMLContentForPopup(container, signatureMarkers, signatureLineDetectors);
 }
 
 /**
@@ -272,9 +471,8 @@ function createRefineModal(emailContent) {
   rewriteContent.style.display = 'none';
   
   // Add email content textarea (readonly for refine, editable for rewrite)
-  // Parse the emailContent to maintain proper formatting
-  // The content from Gmail is already formatted as HTML with proper <p> tags
-  const parsedEmailContent = emailContent;
+  // Parse the emailContent to maintain proper formatting with special handling for signatures
+  const parsedEmailContent = parseGmailContent(emailContent);
   
   const emailTextarea = document.createElement('textarea');
   emailTextarea.className = 'chromex-email-content';

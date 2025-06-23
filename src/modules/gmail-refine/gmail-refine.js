@@ -149,85 +149,93 @@ function addRefineButtonToGmail(composeBox) {
 function getFormattedEmailContent(composeBox) {
   if (!composeBox) return '';
   
-  // Extract the HTML content directly to preserve styling and proper paragraph structure
-  const htmlContent = composeBox.innerHTML;
+  // Get all the block-level elements directly
+  const blockElements = composeBox.querySelectorAll('div, p, br');
   
-  // Create a DOM parser to work with the HTML
+  if (blockElements.length === 0) {
+    // If no block elements, just return the text content
+    return composeBox.textContent.trim();
+  }
+  
+  // Extract text preserving the exact block-level formatting
+  return extractExactFormattingFromGmail(composeBox);
+}
+
+/**
+ * Extract content from Gmail preserving exact formatting structure
+ * @param {HTMLElement} container - The Gmail compose box
+ * @returns {string} Formatted content with exact Gmail spacing preserved
+ */
+function extractExactFormattingFromGmail(container) {
+  // Get the raw HTML content from Gmail compose box
+  const rawHtml = container.innerHTML;
+  
+  // Use DOM parser to work with HTML structure
   const parser = new DOMParser();
-  const doc = parser.parseFromString(`<div>${htmlContent}</div>`, 'text/html');
-  const parsedContent = doc.body.firstChild;
+  const doc = parser.parseFromString(rawHtml, 'text/html');
   
-  // Extract properly formatted paragraphs
-  const formattedParagraphs = [];
-  let currentBlock = '';
-  
-  function processNode(node) {
-    // Skip empty nodes
-    if (!node) return;
+  // Function to extract text with exact line breaks as shown in Gmail
+  function extractTextWithExactBreaks(node, lines = [], currentLine = '') {
+    if (!node) return lines;
     
-    // Handle different node types to preserve structure
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      // Gmail uses <p> tags with styles for proper paragraphs
-      if (node.nodeName === 'P') {
-        // Complete the current block if any
-        if (currentBlock.trim()) {
-          formattedParagraphs.push(currentBlock.trim());
-          currentBlock = '';
-        }
-        
-        // Get text from this paragraph
-        let paraText = node.textContent.trim();
-        if (paraText) {
-          formattedParagraphs.push(paraText);
-        }
+    // Process each child node to preserve exact block structure
+    Array.from(node.childNodes).forEach(child => {
+      if (child.nodeType === Node.TEXT_NODE) {
+        // Text node - add to current line
+        currentLine += child.textContent;
       } 
-      // Special handling for <br> tags - preserves line breaks in signatures
-      else if (node.nodeName === 'BR') {
-        currentBlock += '\n';
-      }
-      // Process other elements recursively
-      else {
-        // First check if this is a block element that should create a paragraph break
-        const isBlockElement = ['DIV', 'BLOCKQUOTE', 'UL', 'OL', 'LI', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.nodeName);
-        
-        // Handle block element transition
-        if (isBlockElement && currentBlock.trim()) {
-          formattedParagraphs.push(currentBlock.trim());
-          currentBlock = '';
+      else if (child.nodeType === Node.ELEMENT_NODE) {
+        // Element node - handle based on type
+        if (child.nodeName === 'BR') {
+          // BR tag - add current line and start new one
+          lines.push(currentLine);
+          currentLine = '';
         }
-        
-        // Process all child nodes
-        Array.from(node.childNodes).forEach(processNode);
-        
-        // Add paragraph break after block elements if they had content
-        if (isBlockElement && node.textContent.trim()) {
-          if (currentBlock.trim()) {
-            formattedParagraphs.push(currentBlock.trim());
-            currentBlock = '';
+        else if (child.nodeName === 'DIV' || child.nodeName === 'P') {
+          // DIV/P tag - may need a line break if not empty
+          if (currentLine.trim()) {
+            lines.push(currentLine);
+            currentLine = '';
           }
+          
+          // Process this block
+          extractTextWithExactBreaks(child, lines, currentLine);
+          
+          // Add a break after block elements if they had content
+          if (child.textContent.trim() && !(lines.length > 0 && lines[lines.length-1] === '')) {
+            lines.push('');
+          }
+        } 
+        else {
+          // Other elements - recursively process
+          extractTextWithExactBreaks(child, lines, currentLine);
         }
       }
+    });
+    
+    // Add any remaining text
+    if (currentLine.trim()) {
+      lines.push(currentLine);
     }
-    // Handle text nodes
-    else if (node.nodeType === Node.TEXT_NODE) {
-      const text = node.textContent;
-      if (text.trim()) {
-        currentBlock += text;
-      }
-    }
+    
+    return lines;
   }
   
-  // Process the entire content
-  Array.from(parsedContent.childNodes).forEach(processNode);
+  // Extract all lines with exact spacing preserved
+  const lines = extractTextWithExactBreaks(doc.body, []);
   
-  // Add any remaining content
-  if (currentBlock.trim()) {
-    formattedParagraphs.push(currentBlock.trim());
-  }
+  // Process the content one final time to clean up any trailing whitespace or unnecessary line breaks
+  // While preserving the exact spacing and formatting structure
+  const processedLines = lines.map(line => line.trim()).filter((line, i, arr) => {
+    // Keep empty lines only when they're not duplicates
+    if (line === '' && i > 0 && arr[i-1] === '') {
+      return false;
+    }
+    return true;
+  });
   
-  // Combine paragraphs with proper spacing
-  const result = formattedParagraphs.join('\n\n');
-  return result;
+  // Combine lines with newlines to preserve exact Gmail formatting
+  return processedLines.join('\n');
 }
 
   // Cleanup function to remove button when compose box is closed

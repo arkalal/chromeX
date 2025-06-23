@@ -282,56 +282,142 @@ function updateComposeBoxContent(composeBox, newContent) {
   
   // Update subject field if a subject was found
   if (subject) {
-    // Find the subject input field in Gmail
-    const subjectField = document.querySelector('input[name="subjectbox"]');
-    if (subjectField) {
-      subjectField.value = subject;
-      subjectField.dispatchEvent(new Event('input', { bubbles: true }));
-      subjectField.dispatchEvent(new Event('change', { bubbles: true }));
+    const subjectInput = document.querySelector('input[name="subjectbox"]');
+    if (subjectInput) {
+      subjectInput.value = subject;
+      subjectInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
-    
-    // Use clean content without the subject line
-    newContent = cleanContent;
   }
   
-  // Clear the compose box
+  // Clear existing content
   composeBox.innerHTML = '';
   
-  // Parse content into paragraphs for proper formatting
-  const paragraphs = newContent.split(/\n{2,}/);
+  // Special signature markers for proper formatting
+  const signatureMarkers = ['[Your Name]', '[Your Position]', '[Your Contact Information]'];
+  const signatureLineDetectors = ['Best regards', 'Regards', 'Sincerely', 'Thank you', 'Thanks', 'Take care'];
   
-  // Process each paragraph
-  paragraphs.forEach((paragraph, pIndex) => {
-    // Handle paragraph with potential line breaks
-    const lines = paragraph.split(/\n/);
-    
-    lines.forEach((line, lIndex) => {
-      const div = document.createElement('div');
-      
-      // If line is empty, add a <br> element
-      if (!line.trim()) {
-        div.innerHTML = '<br>';
-      } else {
-        div.textContent = line;
-      }
-      
-      composeBox.appendChild(div);
-      
-      // Add line break only between lines within the same paragraph
-      if (lIndex < lines.length - 1) {
-        const br = document.createElement('br');
-        composeBox.appendChild(br);
-      }
-    });
-    
-    // Add paragraph separation only if not the last paragraph
-    if (pIndex < paragraphs.length - 1) {
-      // Single line break between paragraphs - this creates proper spacing
-      const paraBreak = document.createElement('div');
-      paraBreak.innerHTML = '<br>';
-      composeBox.appendChild(paraBreak);
+  // More thorough signature detection with regex patterns
+  function isSignatureLine(text) {
+    // Check for exact matches
+    if (signatureMarkers.includes(text.trim()) || 
+        signatureLineDetectors.some(detector => text.trim().startsWith(detector))) {
+      return true;
     }
-  });
+    
+    // Check for signature patterns like "Best, [Name]" or "Your Name" or "Contact: "
+    if (/^(Best|Thanks|Regards|Sincerely|Thank you),?\s*$/.test(text.trim()) || 
+        /Your\s+(Name|Position|Title)/i.test(text) ||
+        /Contact:|Phone:|Email:/i.test(text)) {
+      return true;
+    }
+    
+    return false;
+  }
+  
+  // Process content to preserve signature structure
+  const lines = cleanContent.split('\n').filter(line => line !== null && line !== undefined);
+  
+  // First pass: identify signature sections
+  let inSignature = false;
+  const structuredLines = [];
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    
+    // Skip empty lines that aren't needed for structure
+    if (!line.trim() && structuredLines.length === 0) continue;
+    
+    // Detect signature section start
+    if (!inSignature && isSignatureLine(line)) {
+      inSignature = true;
+      
+      // Add an empty line before signature if needed
+      if (structuredLines.length > 0 && structuredLines[structuredLines.length - 1].text.trim() !== '') {
+        structuredLines.push({ text: '', type: 'separator', isSignature: false });
+      }
+      
+      // Add this line as the first signature line
+      structuredLines.push({ text: line, type: 'line', isSignature: true });
+      continue;
+    }
+    
+    // Process signature lines differently to maintain proper spacing
+    if (inSignature) {
+      if (line.trim()) {
+        structuredLines.push({ 
+          text: line, 
+          type: 'line', 
+          isSignature: true 
+        });
+      }
+      // Skip empty lines within signature section
+      continue;
+    }
+    
+    // Handle normal body content
+    if (!line.trim()) {
+      // Empty line in body - add as a paragraph separator
+      if (structuredLines.length > 0 && 
+          structuredLines[structuredLines.length - 1].type !== 'separator') {
+        structuredLines.push({ text: '', type: 'separator', isSignature: false });
+      }
+    } else {
+      // Regular content line
+      structuredLines.push({ text: line, type: 'line', isSignature: false });
+    }
+  }
+  
+  // Second pass: build the HTML content with proper spacing
+  let currentParagraph = null;
+  let lastType = null;
+  
+  for (let i = 0; i < structuredLines.length; i++) {
+    const item = structuredLines[i];
+    
+    // Skip unnecessary empty lines
+    if (item.type === 'separator' && lastType === 'separator') continue;
+    
+    if (item.type === 'separator') {
+      // Finish current paragraph if exists
+      if (currentParagraph) {
+        composeBox.appendChild(currentParagraph);
+        currentParagraph = null;
+      }
+      
+      // Add paragraph break
+      const breakDiv = document.createElement('div');
+      breakDiv.innerHTML = '<br>';
+      composeBox.appendChild(breakDiv);
+    } else {
+      // Start a new paragraph if needed
+      if (!currentParagraph) {
+        currentParagraph = document.createElement('div');
+      } else if (!item.isSignature) {
+        // For non-signature content, group in same paragraph
+        // No action needed, will append to current paragraph
+      } else {
+        // For signature lines, always start a new div to ensure vertical formatting
+        composeBox.appendChild(currentParagraph);
+        currentParagraph = document.createElement('div');
+      }
+      
+      // Add the text content
+      currentParagraph.appendChild(document.createTextNode(item.text));
+      
+      // Ensure proper spacing for signature lines
+      if (item.isSignature) {
+        composeBox.appendChild(currentParagraph);
+        currentParagraph = null;
+      }
+    }
+    
+    lastType = item.type;
+  }
+  
+  // Add any remaining paragraph
+  if (currentParagraph) {
+    composeBox.appendChild(currentParagraph);
+  }
   
   // Fire input event to trigger Gmail's event listeners
   composeBox.dispatchEvent(new Event('input', { bubbles: true }));
