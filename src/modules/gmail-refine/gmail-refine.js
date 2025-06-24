@@ -167,51 +167,136 @@ function getFormattedEmailContent(composeBox) {
  * @returns {string} Formatted content with exact Gmail spacing preserved
  */
 function extractExactFormattingFromGmail(container) {
-  // Get the raw HTML content from Gmail compose box
-  const rawHtml = container.innerHTML;
+  if (!container) return '';
   
-  // Use DOM parser to work with HTML structure
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(rawHtml, 'text/html');
+  // Clone the container to avoid modifying the original
+  const containerClone = container.cloneNode(true);
   
-  // Function to extract text with exact line breaks as shown in Gmail
-  function extractTextWithExactBreaks(node, lines = [], currentLine = '') {
-    if (!node) return lines;
+  /**
+   * Clean up any artifacts that Gmail might introduce but doesn't actually display
+   * This ensures what we extract matches what the user actually sees
+   */
+  function cleanupHiddenElements(node) {
+    // Remove Gmail-specific artifacts: labels, hidden elements, images
+    const elementsToRemove = Array.from(node.querySelectorAll(
+      '[aria-hidden="true"], .gmail_signature, .gmail_quote, img[alt="" i][src="" i], .gmail-custom-emoji'
+    ));
     
-    // Process each child node to preserve exact block structure
-    Array.from(node.childNodes).forEach(child => {
-      if (child.nodeType === Node.TEXT_NODE) {
-        // Text node - add to current line
-        currentLine += child.textContent;
-      } 
-      else if (child.nodeType === Node.ELEMENT_NODE) {
-        // Element node - handle based on type
-        if (child.nodeName === 'BR') {
-          // BR tag - add current line and start new one
+    elementsToRemove.forEach(el => el.parentNode?.removeChild(el));
+    return node;
+  }
+  
+  // ⚠️ IMPORTANT: Don't remove .gmail_signature divs as they contain the actual signature content
+  // We just need to clean up invisible artifacts but leave signature structure intact
+  function cleanupHiddenElements(node) {
+    // Remove only truly invisible elements but preserve signature structure
+    const elementsToRemove = Array.from(node.querySelectorAll(
+      '[aria-hidden="true"], .gmail_quote, img[alt="" i][src="" i], .gmail-custom-emoji'
+    ));
+    
+    elementsToRemove.forEach(el => el.parentNode?.removeChild(el));
+    return node;
+  }
+  
+  // Clean up the cloned container but preserve signature structure
+  cleanupHiddenElements(containerClone);
+  
+  /**
+   * Deeply process all nodes to extract text with precise spacing
+   * Handles all edge cases in Gmail's rich text editor
+   */
+  function extractFormattedContent(root) {
+    // Array to store each line as it would appear in Gmail
+    const lines = [];
+    // Current line being built
+    let currentLine = '';
+    
+    /**
+     * Process all node types including text, elements, and breaks
+     * This preserves formatting while maintaining Gmail's display rules
+     */
+    function processNode(node) {
+      if (!node) return;
+      
+      // Text node - extract actual visible text
+      if (node.nodeType === Node.TEXT_NODE) {
+        currentLine += node.textContent;
+        return;
+      }
+      
+      // Element node - handle special cases
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const nodeName = node.nodeName.toLowerCase();
+        
+        // Handle explicit line breaks
+        if (nodeName === 'br') {
+          // Add current line content to lines and reset
           lines.push(currentLine);
           currentLine = '';
+          return;
         }
-        else if (child.nodeName === 'DIV' || child.nodeName === 'P') {
-          // DIV/P tag - may need a line break if not empty
+        
+        // Handle block elements (DIV, P) which create new lines in Gmail
+        if (nodeName === 'div' || nodeName === 'p') {
+          // If we've accumulated text, finish this line first
           if (currentLine.trim()) {
             lines.push(currentLine);
             currentLine = '';
           }
           
-          // Process this block
-          extractTextWithExactBreaks(child, lines, currentLine);
-          
-          // Add a break after block elements if they had content
-          if (child.textContent.trim() && !(lines.length > 0 && lines[lines.length-1] === '')) {
-            lines.push('');
+          // Special handling for signature blocks that Gmail creates
+          if (node.classList?.contains('gmail_signature') || 
+              node.getAttribute('data-smartmail') === 'gmail_signature') {
+            // Process signature lines - each element should be on its own line
+            // This ensures signature formatting matches exactly what Gmail displays
+            Array.from(node.children).forEach(signatureElement => {
+              // Each child of signature block is a separate line
+              const signatureText = signatureElement.textContent.trim();
+              if (signatureText) {
+                lines.push(signatureText);
+              } else if (signatureElement.innerHTML === '<br>') {
+                lines.push(''); // Empty line in signature
+              }
+            });
+            
+            // If signature had no children but has text content, add it as a line
+            if (node.children.length === 0 && node.textContent.trim()) {
+              lines.push(node.textContent.trim());
+            }
+            return;
           }
-        } 
-        else {
-          // Other elements - recursively process
-          extractTextWithExactBreaks(child, lines, currentLine);
+          
+          // Special case: empty DIV with BR represents a blank line in Gmail
+          if ((node.innerHTML === '<br>' || node.innerHTML.trim() === '') &&
+              (!node.textContent || !node.textContent.trim())) {
+            lines.push('');
+            return;
+          }
+          
+          // Process all child nodes to extract formatting
+          for (const child of node.childNodes) {
+            processNode(child);
+          }
+          
+          // End of block - push current line if not empty and reset
+          if (currentLine.trim()) {
+            lines.push(currentLine);
+            currentLine = '';
+          }
+          return;
+        }
+        
+        // Process other inline elements (spans, formatting, etc.)
+        for (const child of node.childNodes) {
+          processNode(child);
         }
       }
-    });
+    }
+    
+    // Start processing from root
+    for (const child of root.childNodes) {
+      processNode(child);
+    }
     
     // Add any remaining text
     if (currentLine.trim()) {
@@ -221,21 +306,115 @@ function extractExactFormattingFromGmail(container) {
     return lines;
   }
   
-  // Extract all lines with exact spacing preserved
-  const lines = extractTextWithExactBreaks(doc.body, []);
+  // Extract all content lines with precise formatting
+  const extractedLines = extractFormattedContent(containerClone);
   
-  // Process the content one final time to clean up any trailing whitespace or unnecessary line breaks
-  // While preserving the exact spacing and formatting structure
-  const processedLines = lines.map(line => line.trim()).filter((line, i, arr) => {
-    // Keep empty lines only when they're not duplicates
-    if (line === '' && i > 0 && arr[i-1] === '') {
-      return false;
+  /**
+   * Normalize line breaks according to Gmail's visual rendering rules:
+   * - Multiple consecutive empty lines are collapsed into one
+   * - Preserve single empty lines for spacing
+   * - Trim whitespace from beginning/end of each line while preserving internal spaces
+   */
+  function normalizeLineBreaks(lines) {
+    const normalized = [];
+    let lastLineEmpty = false;
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      if (!trimmedLine) {
+        // Empty line - only keep if we haven't just added an empty line
+        if (!lastLineEmpty) {
+          normalized.push('');
+          lastLineEmpty = true;
+        }
+      } else {
+        // Non-empty line - add it and reset empty line tracker
+        normalized.push(trimmedLine);
+        lastLineEmpty = false;
+      }
     }
-    return true;
-  });
+    
+    return normalized;
+  }
   
-  // Combine lines with newlines to preserve exact Gmail formatting
-  return processedLines.join('\n');
+  // Special processing for signature blocks
+  function detectSignatureLines(lines) {
+    const signatureMarkers = [
+      '[Your Name]', '[Your Full Name]', '[Your Position]', '[Your Contact Information]',
+      'Kind regards', 'Warm regards', 'Best regards', 'Regards', 'Sincerely',
+      'Thank you', 'Thanks', 'Best'
+    ];
+    
+    // Tag lines that appear to be signatures to preserve their formatting
+    return lines.map(line => {
+      // Check if this line is likely part of a signature
+      const isSignatureLine = signatureMarkers.some(marker => 
+        line.includes(marker) || 
+        line.trim().startsWith(marker) ||
+        /^\[Your\s/.test(line) || // [Your something]
+        /^\[\w+\s/.test(line) // Any [Word something]
+      );
+      
+      return {
+        content: line,
+        isSignatureLine
+      };
+    });
+  }
+  
+  // Tag signature lines to preserve their formatting during normalization
+  const taggedLines = detectSignatureLines(extractedLines);
+  
+  // Use a modified normalization that respects signature formatting
+  function normalizeWithSignaturesPreserved(taggedLines) {
+    const normalized = [];
+    let lastLineEmpty = false;
+    let inSignatureBlock = false;
+    
+    for (let i = 0; i < taggedLines.length; i++) {
+      const { content, isSignatureLine } = taggedLines[i];
+      const trimmedContent = content.trim();
+      
+      // Track when we're in a signature block
+      if (isSignatureLine && !inSignatureBlock) {
+        inSignatureBlock = true;
+        
+        // Add an empty line before signature if the last line wasn't empty
+        if (normalized.length > 0 && normalized[normalized.length - 1] !== '' && !lastLineEmpty) {
+          normalized.push('');
+        }
+      }
+      
+      if (!trimmedContent) {
+        // Empty line - handle based on context
+        if (!lastLineEmpty || inSignatureBlock) {
+          // In signature blocks, preserve all spacing exactly
+          normalized.push('');
+          lastLineEmpty = true;
+        }
+      } else {
+        // Non-empty line
+        normalized.push(trimmedContent);
+        lastLineEmpty = false;
+      }
+    }
+    
+    return normalized;
+  }
+  
+  // Get the final normalized content with signature preservation
+  const normalizedLines = normalizeWithSignaturesPreserved(taggedLines);
+  
+  // Ensure we don't have trailing empty lines at the end which Gmail doesn't display
+  while (normalizedLines.length > 0 && normalizedLines[normalizedLines.length - 1] === '') {
+    normalizedLines.pop();
+  }
+  
+  // Debug: log the exact content being extracted (for troubleshooting)
+  console.log('Extracted content:', normalizedLines);
+  
+  return normalizedLines.join('\n');
 }
 
   // Cleanup function to remove button when compose box is closed

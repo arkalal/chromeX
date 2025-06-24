@@ -292,132 +292,55 @@ function updateComposeBoxContent(composeBox, newContent) {
   // Clear existing content
   composeBox.innerHTML = '';
   
-  // Special signature markers for proper formatting
-  const signatureMarkers = ['[Your Name]', '[Your Position]', '[Your Contact Information]'];
-  const signatureLineDetectors = ['Best regards', 'Regards', 'Sincerely', 'Thank you', 'Thanks', 'Take care'];
-  
-  // More thorough signature detection with regex patterns
-  function isSignatureLine(text) {
-    // Check for exact matches
-    if (signatureMarkers.includes(text.trim()) || 
-        signatureLineDetectors.some(detector => text.trim().startsWith(detector))) {
-      return true;
+  /**
+   * Convert plain text with newlines into properly structured DOM elements
+   * that exactly match Gmail's rendering approach
+   */
+  function buildDomStructureFromText(text) {
+    // Get lines from content, including empty lines which are significant for spacing
+    const lines = text.split('\n');
+    
+    // Create a document fragment to hold all the elements
+    const fragment = document.createDocumentFragment();
+    
+    // Track consecutive empty lines to avoid adding too many breaks
+    let emptyLineCount = 0;
+    let lastAddedElement = null;
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const isLastLine = i === lines.length - 1;
+      
+      // Handle empty lines (spacing/formatting)
+      if (!line.trim()) {
+        emptyLineCount++;
+        
+        // Only add a break element for the first empty line
+        if (emptyLineCount === 1 && !isLastLine) {
+          const breakDiv = document.createElement('div');
+          breakDiv.innerHTML = '<br>';
+          fragment.appendChild(breakDiv);
+          lastAddedElement = breakDiv;
+        }
+        continue;
+      }
+      
+      // Reset empty line counter when we find content
+      emptyLineCount = 0;
+      
+      // Create a new div for this content line
+      const contentDiv = document.createElement('div');
+      contentDiv.textContent = line;
+      fragment.appendChild(contentDiv);
+      lastAddedElement = contentDiv;
     }
     
-    // Check for signature patterns like "Best, [Name]" or "Your Name" or "Contact: "
-    if (/^(Best|Thanks|Regards|Sincerely|Thank you),?\s*$/.test(text.trim()) || 
-        /Your\s+(Name|Position|Title)/i.test(text) ||
-        /Contact:|Phone:|Email:/i.test(text)) {
-      return true;
-    }
-    
-    return false;
+    return fragment;
   }
   
-  // Process content to preserve signature structure
-  const lines = cleanContent.split('\n').filter(line => line !== null && line !== undefined);
-  
-  // First pass: identify signature sections
-  let inSignature = false;
-  const structuredLines = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    
-    // Skip empty lines that aren't needed for structure
-    if (!line.trim() && structuredLines.length === 0) continue;
-    
-    // Detect signature section start
-    if (!inSignature && isSignatureLine(line)) {
-      inSignature = true;
-      
-      // Add an empty line before signature if needed
-      if (structuredLines.length > 0 && structuredLines[structuredLines.length - 1].text.trim() !== '') {
-        structuredLines.push({ text: '', type: 'separator', isSignature: false });
-      }
-      
-      // Add this line as the first signature line
-      structuredLines.push({ text: line, type: 'line', isSignature: true });
-      continue;
-    }
-    
-    // Process signature lines differently to maintain proper spacing
-    if (inSignature) {
-      if (line.trim()) {
-        structuredLines.push({ 
-          text: line, 
-          type: 'line', 
-          isSignature: true 
-        });
-      }
-      // Skip empty lines within signature section
-      continue;
-    }
-    
-    // Handle normal body content
-    if (!line.trim()) {
-      // Empty line in body - add as a paragraph separator
-      if (structuredLines.length > 0 && 
-          structuredLines[structuredLines.length - 1].type !== 'separator') {
-        structuredLines.push({ text: '', type: 'separator', isSignature: false });
-      }
-    } else {
-      // Regular content line
-      structuredLines.push({ text: line, type: 'line', isSignature: false });
-    }
-  }
-  
-  // Second pass: build the HTML content with proper spacing
-  let currentParagraph = null;
-  let lastType = null;
-  
-  for (let i = 0; i < structuredLines.length; i++) {
-    const item = structuredLines[i];
-    
-    // Skip unnecessary empty lines
-    if (item.type === 'separator' && lastType === 'separator') continue;
-    
-    if (item.type === 'separator') {
-      // Finish current paragraph if exists
-      if (currentParagraph) {
-        composeBox.appendChild(currentParagraph);
-        currentParagraph = null;
-      }
-      
-      // Add paragraph break
-      const breakDiv = document.createElement('div');
-      breakDiv.innerHTML = '<br>';
-      composeBox.appendChild(breakDiv);
-    } else {
-      // Start a new paragraph if needed
-      if (!currentParagraph) {
-        currentParagraph = document.createElement('div');
-      } else if (!item.isSignature) {
-        // For non-signature content, group in same paragraph
-        // No action needed, will append to current paragraph
-      } else {
-        // For signature lines, always start a new div to ensure vertical formatting
-        composeBox.appendChild(currentParagraph);
-        currentParagraph = document.createElement('div');
-      }
-      
-      // Add the text content
-      currentParagraph.appendChild(document.createTextNode(item.text));
-      
-      // Ensure proper spacing for signature lines
-      if (item.isSignature) {
-        composeBox.appendChild(currentParagraph);
-        currentParagraph = null;
-      }
-    }
-    
-    lastType = item.type;
-  }
-  
-  // Add any remaining paragraph
-  if (currentParagraph) {
-    composeBox.appendChild(currentParagraph);
-  }
+  // Build and insert the DOM structure that matches Gmail's formatting exactly
+  const contentFragment = buildDomStructureFromText(cleanContent);
+  composeBox.appendChild(contentFragment);
   
   // Fire input event to trigger Gmail's event listeners
   composeBox.dispatchEvent(new Event('input', { bubbles: true }));
