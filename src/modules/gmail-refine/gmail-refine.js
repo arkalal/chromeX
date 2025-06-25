@@ -230,7 +230,18 @@ function extractExactFormattingFromGmail(container) {
         
         // Handle explicit line breaks
         if (nodeName === 'br') {
-          // Add current line content to lines and reset
+          // Special case: if this is the last BR in a paragraph, handle differently
+          // to preserve Gmail's formatting for signatures
+          const nextSibling = node.nextSibling;
+          if (!nextSibling || 
+              (nextSibling.nodeType === Node.TEXT_NODE && !nextSibling.textContent.trim())) {
+            // This is the last BR in a block - preserve as a line break at end of paragraph
+            lines.push(currentLine);
+            currentLine = '';
+            return;
+          }
+          
+          // Regular BR in middle of content - creates a new line
           lines.push(currentLine);
           currentLine = '';
           return;
@@ -242,6 +253,59 @@ function extractExactFormattingFromGmail(container) {
           if (currentLine.trim()) {
             lines.push(currentLine);
             currentLine = '';
+          }
+          
+          // Enhanced detection for signature blocks in paragraphs
+          // This covers multiple signature formats in Gmail
+          const isLikelySignature = (
+            // Check for signature markers
+            node.innerHTML.includes('[Your') || 
+            node.innerHTML.toLowerCase().includes('regards,') ||
+            node.innerHTML.toLowerCase().includes('sincerely,') ||
+            node.innerHTML.toLowerCase().includes('thank you') ||
+            node.textContent.includes('Contact Information') ||
+            // Detect signature by structure (p tag at end of email with br tags)
+            (node.innerHTML.includes('<br>') && 
+             !node.nextElementSibling && 
+             node.previousElementSibling && 
+             node.previousElementSibling.textContent.trim().length > 0) ||
+            // Look for common signature patterns
+            /^[A-Z][a-z]+\s[A-Z][a-z]+<br>/.test(node.innerHTML) // Name pattern
+          );
+          
+          // Special case for paragraphs that look like signatures
+          if (node.innerHTML.includes('<br>') && isLikelySignature) {
+            console.log('Detected signature paragraph:', node.innerHTML);
+            
+            // Get all HTML nodes including text and BR elements
+            const childNodes = Array.from(node.childNodes);
+            let signaturePart = '';
+            let signatureLines = [];
+            
+            // Process each node to extract signature parts
+            for (const childNode of childNodes) {
+              if (childNode.nodeType === Node.TEXT_NODE) {
+                // Add text content
+                signaturePart += childNode.textContent;
+              } 
+              else if (childNode.nodeType === Node.ELEMENT_NODE && 
+                       childNode.nodeName.toLowerCase() === 'br') {
+                // When we hit a BR tag, finish the current line and start a new one
+                if (signaturePart.trim()) {
+                  signatureLines.push(signaturePart.trim());
+                }
+                signaturePart = '';
+              }
+            }
+            
+            // Add the last part if there's remaining text
+            if (signaturePart.trim()) {
+              signatureLines.push(signaturePart.trim());
+            }
+            
+            // Add all signature lines to output
+            signatureLines.forEach(line => lines.push(line));
+            return;
           }
           
           // Special handling for signature blocks that Gmail creates
@@ -338,63 +402,113 @@ function extractExactFormattingFromGmail(container) {
     return normalized;
   }
   
-  // Special processing for signature blocks
+  /**
+   * Enhanced signature detection and preservation
+   * This function more accurately identifies signature lines using both content and position heuristics
+   */
   function detectSignatureLines(lines) {
+    // Define common markers for signature content
     const signatureMarkers = [
       '[Your Name]', '[Your Full Name]', '[Your Position]', '[Your Contact Information]',
       'Kind regards', 'Warm regards', 'Best regards', 'Regards', 'Sincerely',
-      'Thank you', 'Thanks', 'Best'
+      'Thank you', 'Thanks', 'Best', 'Warm', 'Sincerely yours',
+      'Yours sincerely', 'Respectfully', 'Cheers', 'All the best'
     ];
     
-    // Tag lines that appear to be signatures to preserve their formatting
-    return lines.map(line => {
-      // Check if this line is likely part of a signature
-      const isSignatureLine = signatureMarkers.some(marker => 
-        line.includes(marker) || 
-        line.trim().startsWith(marker) ||
-        /^\[Your\s/.test(line) || // [Your something]
-        /^\[\w+\s/.test(line) // Any [Word something]
+    let detectedSignatureStartLine = -1;
+    
+    // First pass - check for clear signature indicators
+    for (let i = Math.max(0, lines.length - 10); i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      // Check for exact signature phrases
+      const hasSignatureMarker = signatureMarkers.some(marker => 
+        line.toLowerCase().includes(marker.toLowerCase()) ||
+        line.toLowerCase().startsWith(marker.toLowerCase())
       );
       
+      // Check for signature patterns
+      const isSignaturePattern =
+        /^\[Your\s/.test(line) || // [Your something]
+        /^\[\w+\s/.test(line) || // Any [Word something]
+        /^[A-Z][a-z]+\s[A-Z][a-z]+$/.test(line) || // First Last name pattern
+        (line.split(' ').length <= 4 && line.split(' ').length > 1); // Short name-like lines
+      
+      if (hasSignatureMarker || isSignaturePattern) {
+        detectedSignatureStartLine = i;
+        break;
+      }
+    }
+    
+    // Second pass - check for structural signature patterns (last 3-5 short lines)
+    if (detectedSignatureStartLine === -1 && lines.length > 3) {
+      const lastFewLines = lines.slice(Math.max(0, lines.length - 5));
+      
+      // If the last few lines are all short (likely contact info/signature)
+      const allShort = lastFewLines.every(line => line.trim().length < 50);
+      const hasEmptyLineInBetween = lastFewLines.some(line => line.trim() === '');
+      
+      if (allShort && !hasEmptyLineInBetween) {
+        // Find the first non-empty line in the last few lines
+        for (let i = 0; i < lastFewLines.length; i++) {
+          if (lastFewLines[i].trim()) {
+            detectedSignatureStartLine = lines.length - lastFewLines.length + i;
+            break;
+          }
+        }
+      }
+    }
+    
+    // Tag lines based on our detection
+    return lines.map((line, index) => {
       return {
         content: line,
-        isSignatureLine
+        isSignatureLine: detectedSignatureStartLine !== -1 && index >= detectedSignatureStartLine
       };
     });
   }
   
-  // Tag signature lines to preserve their formatting during normalization
+  // Tag signature lines using enhanced detection
   const taggedLines = detectSignatureLines(extractedLines);
   
-  // Use a modified normalization that respects signature formatting
+  /**
+   * Improved normalization that intelligently preserves signature formatting
+   * Handles all Gmail signature formats while maintaining exact spacing
+   */
   function normalizeWithSignaturesPreserved(taggedLines) {
     const normalized = [];
     let lastLineEmpty = false;
     let inSignatureBlock = false;
+    let consecutiveEmptyLines = 0;
     
     for (let i = 0; i < taggedLines.length; i++) {
       const { content, isSignatureLine } = taggedLines[i];
       const trimmedContent = content.trim();
       
-      // Track when we're in a signature block
+      // Detect transition into signature block
       if (isSignatureLine && !inSignatureBlock) {
         inSignatureBlock = true;
         
-        // Add an empty line before signature if the last line wasn't empty
-        if (normalized.length > 0 && normalized[normalized.length - 1] !== '' && !lastLineEmpty) {
+        // Add an empty line before signature if needed for separation
+        const lastLine = normalized.length > 0 ? normalized[normalized.length - 1] : '';
+        if (normalized.length > 0 && lastLine !== '' && !lastLineEmpty) {
           normalized.push('');
         }
       }
       
       if (!trimmedContent) {
-        // Empty line - handle based on context
-        if (!lastLineEmpty || inSignatureBlock) {
-          // In signature blocks, preserve all spacing exactly
+        // Empty line handling
+        consecutiveEmptyLines++;
+        
+        // In general content, collapse multiple empty lines
+        // But in signature blocks, preserve exact spacing
+        if (inSignatureBlock || consecutiveEmptyLines <= 1) {
           normalized.push('');
           lastLineEmpty = true;
         }
       } else {
         // Non-empty line
+        consecutiveEmptyLines = 0;
         normalized.push(trimmedContent);
         lastLineEmpty = false;
       }
@@ -403,16 +517,40 @@ function extractExactFormattingFromGmail(container) {
     return normalized;
   }
   
-  // Get the final normalized content with signature preservation
+  // Apply enhanced normalization
   const normalizedLines = normalizeWithSignaturesPreserved(taggedLines);
   
-  // Ensure we don't have trailing empty lines at the end which Gmail doesn't display
-  while (normalizedLines.length > 0 && normalizedLines[normalizedLines.length - 1] === '') {
-    normalizedLines.pop();
+  // Handle trailing empty lines more intelligently
+  // Keep one empty line at the end if we detected a signature block
+  // as Gmail often renders signatures with trailing space
+  let hasSignatureBlock = taggedLines.some(line => line.isSignatureLine);
+  
+  if (hasSignatureBlock) {
+    // For signature blocks, preserve spacing but limit to max 1 trailing empty line
+    while (normalizedLines.length > 0 && 
+           normalizedLines[normalizedLines.length - 1] === '' && 
+           normalizedLines[normalizedLines.length - 2] === '') {
+      normalizedLines.pop();
+    }
+  } else {
+    // For regular content, remove all trailing empty lines
+    while (normalizedLines.length > 0 && normalizedLines[normalizedLines.length - 1] === '') {
+      normalizedLines.pop();
+    }
   }
   
-  // Debug: log the exact content being extracted (for troubleshooting)
-  console.log('Extracted content:', normalizedLines);
+  // Add verbose debug logging to help diagnose formatting issues
+  console.log('Extracted content lines:', normalizedLines.length);
+  console.log('Content with signature detection:', normalizedLines.map((line, i) => 
+    `Line ${i}: ${taggedLines[i]?.isSignatureLine ? '[SIG] ' : ''}"${line}"`
+  ).join('\n'));
+  
+  // Handle the edge case where Gmail adds an extra paragraph at the end
+  if (containerClone.lastElementChild && 
+      containerClone.lastElementChild.innerHTML === '<br>' &&
+      normalizedLines[normalizedLines.length - 1] !== '') {
+    normalizedLines.push('');
+  }
   
   return normalizedLines.join('\n');
 }
