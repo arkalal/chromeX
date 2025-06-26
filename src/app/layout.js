@@ -1,5 +1,6 @@
 import { Inter, DM_Sans, Source_Code_Pro } from "next/font/google";
 import "./globals.scss";
+import AuthProvider from "../../components/auth/AuthProvider";
 
 // Primary font for body text
 const inter = Inter({
@@ -32,7 +33,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${inter.variable} ${dmSans.variable} ${sourceCodePro.variable}`}>
       <body className={dmSans.className}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

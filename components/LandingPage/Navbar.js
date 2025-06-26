@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FiMenu, FiX } from "react-icons/fi";
+import UserMenu from "../auth/UserMenu";
 import styles from "./Navbar.module.scss";
 
 const Navbar = () => {
@@ -54,7 +55,7 @@ const Navbar = () => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <button className="btn btn-primary">Sign In</button>
+            <UserMenu />
           </motion.div>
         </div>
 
@@ -81,7 +82,9 @@ const Navbar = () => {
           <li><a href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a></li>
           <li><a href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</a></li>
           <li className={styles.mobileAuthButton}>
-            <button className="btn btn-primary" onClick={() => setMobileMenuOpen(false)}>Sign In</button>
+            <div onClick={() => setMobileMenuOpen(false)}>
+              <UserMenu />
+            </div>
           </li>
         </ul>
       </motion.div>

@@ -1,0 +1,191 @@
+/* User Menu styles using project theme variables */
+
+.userMenu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  z-index: 50;
+}
+
+.loadingAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #E5E7EB;
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 300%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: loading 1.5s infinite;
+  }
+}
+
+@keyframes loading {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+.avatarButton {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #4F46E5;
+  }
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.defaultAvatar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4F46E5;
+  color: #FFFFFF;
+  border-radius: 50%;
+  font-size: 1.2rem;
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 280px;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  padding: 1rem;
+  transform-origin: top right;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  padding-bottom: 0.75rem;
+}
+
+.userImage {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 1rem;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.defaultAvatarLarge {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4F46E5;
+  color: #FFFFFF;
+  border-radius: 50%;
+  font-size: 1.5rem;
+}
+
+.userDetails {
+  flex-grow: 1;
+  
+  h3 {
+    margin: 0 0 0.25rem;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #111827;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #6B7280;
+    word-break: break-all;
+  }
+}
+
+.divider {
+  height: 1px;
+  background-color: #E5E7EB;
+  margin: 0.5rem 0;
+}
+
+.signOutButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  color: #EF4444;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  
+  svg {
+    font-size: 1.1rem;
+  }
+  
+  &:hover {
+    background-color: #FEF2F2;
+  }
+}
+
+.signInButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #4F46E5;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: #4338CA;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.4);
+  }
+}
