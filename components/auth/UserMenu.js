@@ -3,17 +3,38 @@
 import { useState, useRef, useEffect } from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiUser, FiLogOut } from "react-icons/fi";
+import { FiUser, FiLogOut, FiZap, FiBarChart2 } from "react-icons/fi";
 import Image from "next/image";
+import Link from "next/link";
 import styles from "./UserMenu.module.scss";
 
 export default function UserMenu() {
   const { data: session, status } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const [userCredits, setUserCredits] = useState(null);
   const menuRef = useRef(null);
 
   const loading = status === "loading";
   const authenticated = status === "authenticated";
+  
+  // Fetch user credits data when authenticated
+  useEffect(() => {
+    if (authenticated) {
+      fetchUserCredits();
+    }
+  }, [authenticated]);
+  
+  const fetchUserCredits = async () => {
+    try {
+      const response = await fetch('/api/user/credits');
+      if (response.ok) {
+        const data = await response.json();
+        setUserCredits(data);
+      }
+    } catch (error) {
+      console.error('Error fetching user credits:', error);
+    }
+  };
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -77,8 +98,14 @@ export default function UserMenu() {
     <div className={styles.userMenu} ref={menuRef}>
       {authenticated ? (
         <>
+          {userCredits?.isPremium && (
+            <Link href="/dashboard" className={styles.dashboardButton}>
+              <FiBarChart2 />
+              <span>Dashboard</span>
+            </Link>
+          )}
           <button 
-            className={styles.avatarButton} 
+            className={`${styles.avatarButton} ${userCredits?.isPremium ? styles.premium : ''}`}
             onClick={() => setIsOpen(!isOpen)} 
             aria-label="User menu"
           >
@@ -114,6 +141,12 @@ export default function UserMenu() {
                 exit="exit"
               >
                 <div className={styles.userInfo}>
+                  {userCredits?.isPremium && (
+                    <div className={styles.premiumBadge}>
+                      <FiZap />
+                      <span>Premium</span>
+                    </div>
+                  )}
                   <div className={styles.userImage}>
                     {session?.user?.image ? (
                       <div className={styles.imageWrapper}>
@@ -138,6 +171,17 @@ export default function UserMenu() {
                 </div>
                 
                 <div className={styles.divider}></div>
+                
+                {userCredits?.isPremium && (
+                  <Link 
+                    href="/dashboard"
+                    className={styles.menuButton}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <FiBarChart2 />
+                    <span>Dashboard</span>
+                  </Link>
+                )}
                 
                 <button 
                   className={styles.signOutButton} 

@@ -4,6 +4,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  gap: 1rem;
   z-index: 50;
 }
 
@@ -52,6 +53,38 @@
     outline: none;
     box-shadow: 0 0 0 2px #4F46E5;
   }
+  
+  &.premium {
+    border: 2px solid #F97316;
+    box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+  }
+}
+
+.dashboardButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(79, 70, 229, 0.1);
+  color: #4F46E5;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  
+  svg {
+    font-size: 1rem;
+  }
+  
+  &:hover {
+    background-color: rgba(79, 70, 229, 0.2);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 768px) {
+    display: none; /* Hide on mobile, will be shown in dropdown menu */
+  }
 }
 
 .avatar {
@@ -91,6 +124,27 @@
   display: flex;
   align-items: center;
   padding-bottom: 0.75rem;
+  position: relative;
+}
+
+.premiumBadge {
+  position: absolute;
+  top: -12px;
+  right: -8px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: linear-gradient(to right, #4F46E5, #F97316);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  box-shadow: 0 3px 8px rgba(249, 115, 22, 0.3);
+  
+  svg {
+    font-size: 0.75rem;
+  }
 }
 
 .userImage {
@@ -141,6 +195,30 @@
   height: 1px;
   background-color: #E5E7EB;
   margin: 0.5rem 0;
+}
+
+.menuButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  color: #4F46E5;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  text-decoration: none;
+  
+  svg {
+    font-size: 1.1rem;
+  }
+  
+  &:hover {
+    background-color: rgba(79, 70, 229, 0.1);
+  }
 }
 
 .signOutButton {

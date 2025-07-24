@@ -1,11 +1,72 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FiCheck, FiZap } from "react-icons/fi";
+import { FiCheck, FiZap, FiLoader } from "react-icons/fi";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import styles from "./Pricing.module.scss";
 
 const Pricing = () => {
+  const { data: session } = useSession();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [userCredits, setUserCredits] = useState(null);
+  const [addingCredits, setAddingCredits] = useState(1);
+  
+  useEffect(() => {
+    if (session?.user) {
+      fetchUserCredits();
+    }
+  }, [session]);
+  
+  const fetchUserCredits = async () => {
+    try {
+      const response = await fetch('/api/user/credits');
+      if (response.ok) {
+        const data = await response.json();
+        setUserCredits(data);
+      }
+    } catch (error) {
+      console.error('Error fetching user credits:', error);
+    }
+  };
+
+  const handlePayment = async (type, quantity = 1) => {
+    if (!session) {
+      router.push('/api/auth/signin');
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      // Get product ID based on type
+      const productId = type === 'subscription' 
+        ? process.env.NEXT_PUBLIC_DODO_PREMIUM_PRODUCT_ID 
+        : process.env.NEXT_PUBLIC_DODO_CREDITS_PRODUCT_ID;
+      
+      const response = await fetch(`/api/payments?productId=${productId}&type=${type}&quantity=${quantity}`);
+      
+      if (response.ok) {
+        const { url } = await response.json();
+        window.location.href = url; // Redirect to Dodo Payments checkout
+      } else {
+        const error = await response.json();
+        console.error('Payment error:', error);
+        alert('Failed to process payment. Please try again.');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      alert('Failed to process payment. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const increaseCredits = () => setAddingCredits(prev => prev + 1);
+  const decreaseCredits = () => setAddingCredits(prev => prev > 1 ? prev - 1 : 1);
+  
   const plans = [
     {
       name: "ChromeX Premium",
@@ -87,9 +148,43 @@ const Pricing = () => {
               </ul>
               
               <div className={styles.planAction}>
-                <button className={plan.featured ? "btn btn-cta" : "btn btn-secondary"}>
-                  {plan.cta}
-                </button>
+                {plan.name === "ChromeX Premium" ? (
+                  userCredits?.isPremium ? (
+                    <button className="btn btn-secondary" disabled>
+                      Current Plan
+                    </button>
+                  ) : (
+                    <button 
+                      className={plan.featured ? "btn btn-cta" : "btn btn-secondary"}
+                      onClick={() => handlePayment('subscription')}
+                      disabled={loading}
+                    >
+                      {loading ? <FiLoader className={styles.spinner} /> : plan.cta}
+                    </button>
+                  )
+                ) : (
+                  // Extra AI Credits
+                  userCredits?.isPremium ? (
+                    <div className={styles.creditActions}>
+                      <div className={styles.creditCounter}>
+                        <button onClick={decreaseCredits} className={styles.counterBtn}>-</button>
+                        <span>${addingCredits * 5} ({addingCredits * 500} credits)</span>
+                        <button onClick={increaseCredits} className={styles.counterBtn}>+</button>
+                      </div>
+                      <button 
+                        className="btn btn-secondary"
+                        onClick={() => handlePayment('credits', addingCredits)}
+                        disabled={loading}
+                      >
+                        {loading ? <FiLoader className={styles.spinner} /> : plan.cta}
+                      </button>
+                    </div>
+                  ) : (
+                    <button className="btn btn-secondary" disabled>
+                      Premium users only
+                    </button>
+                  )
+                )}
               </div>
             </motion.div>
           ))}
