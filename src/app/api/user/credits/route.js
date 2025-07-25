@@ -52,7 +52,8 @@ export async function GET(request) {
       isPremium: userCredits.isPremium,
       subscriptionStatus: userCredits.subscriptionStatus,
       planStartDate: userCredits.planStartDate,
-      planEndDate: userCredits.planEndDate
+      planEndDate: userCredits.planEndDate,
+      subscriptionId: userCredits.subscriptionId || null
     });
   } catch (error) {
     console.error("Error fetching user credits:", error);
@@ -62,7 +63,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     
     if (!session) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });

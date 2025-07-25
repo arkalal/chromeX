@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { FiX, FiCreditCard, FiRefreshCw, FiZap, FiBarChart2, FiCalendar } from "react-icons/fi";
 import styles from "./Dashboard.module.scss";
 import Link from "next/link";
+import SubscriptionManager from "../../../components/Dashboard/SubscriptionManager";
 
 // Thank You Modal Component
 const ThankYouModal = ({ type, onClose }) => {
@@ -104,12 +105,75 @@ const Dashboard = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [userCredits, setUserCredits] = useState(null);
+  const [subscription, setSubscription] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showFailureModal, setShowFailureModal] = useState(false);
   const [failureMessage, setFailureMessage] = useState('');
   const [modalType, setModalType] = useState('premium');
   const [loading, setLoading] = useState(true);
-  
+
+  // Fetch user credits data
+  const fetchUserCredits = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/user/credits');
+      if (response.ok) {
+        const data = await response.json();
+        setUserCredits(data);
+      }
+    } catch (error) {
+      console.error('Error fetching user credits:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch subscription data
+  const fetchSubscription = useCallback(async () => {
+    try {
+      // Only fetch if user has a subscription ID
+      if (!userCredits?.subscriptionId) {
+        console.log('No subscription ID available');
+        return;
+      }
+      
+      console.log('Fetching subscription for ID:', userCredits.subscriptionId);
+      const response = await fetch(`/api/subscriptions?subscriptionId=${userCredits.subscriptionId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        // The API now returns the subscription data directly
+        if (data && data.subscription_id) {
+          setSubscription(data);
+          console.log('Subscription data loaded successfully:', data.subscription_id);
+        } else {
+          console.warn('Subscription API returned ok but no valid subscription data');
+        }
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Subscription API error:', response.status, errorData);
+      }
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+    }
+  }, [userCredits?.subscriptionId]);
+
+  // Handle subscription updates (used by SubscriptionManager)
+  const handleSubscriptionUpdate = useCallback(() => {
+    // Refresh both subscription and credits data
+    fetchSubscription();
+    fetchUserCredits();
+  }, [fetchSubscription, fetchUserCredits]);
+
+  // Format date string
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric'
+    });
+  };
+
   // Check payment status from URL params
   useEffect(() => {
     // Check for payment status in URL params
@@ -147,9 +211,8 @@ const Dashboard = () => {
       // Remove query params to avoid showing modal on page refresh
       window.history.replaceState({}, document.title, '/dashboard');
     }
-  }, [searchParams]);
-  
-  // Fetch user credits data
+  }, [searchParams, fetchUserCredits]);
+
   useEffect(() => {
     if (status === 'loading') return;
     
@@ -159,66 +222,27 @@ const Dashboard = () => {
     }
     
     fetchUserCredits();
-  }, [status, session, router]);
+    fetchSubscription();
+  }, [status, session, router, fetchUserCredits, fetchSubscription]);
   
-  const fetchUserCredits = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/user/credits');
-      if (response.ok) {
-        const data = await response.json();
-        setUserCredits(data);
-      }
-    } catch (error) {
-      console.error('Error fetching user credits:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
-    });
-  };
-  
-  const cancelSubscription = async () => {
-    if (!confirm('Are you sure you want to cancel your subscription? You will still have access until the end of your billing period.')) {
-      return;
-    }
+  // Check if user is premium - redirect to home if not
+  useEffect(() => {
+    // Skip if still loading or no user credits loaded yet
+    if (status === 'loading' || !userCredits) return;
     
-    try {
-      const response = await fetch('/api/user/credits', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'cancel_subscription'
-        }),
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setUserCredits(data);
-        alert('Your subscription has been canceled. You will continue to have access until the end of your current billing period.');
-      }
-    } catch (error) {
-      console.error('Error canceling subscription:', error);
-      alert('Failed to cancel subscription. Please try again.');
+    // Allow access if user is premium (even if they've canceled but still in billing period)
+    if (!userCredits.isPremium) {
+      router.push('/');
     }
-  };
-  
+  }, [userCredits, router, status]);
+
   if (status === 'loading' || loading) {
     return <div className={styles.loading}>Loading...</div>;
   }
-  
+
   const creditUsagePercentage = userCredits?.credits ? 
     Math.min(100, Math.max(0, (userCredits.credits / 2000) * 100)) : 0;
+
   
   return (
     <div className={styles.dashboardContainer}>
@@ -278,7 +302,12 @@ const Dashboard = () => {
                   <div className={styles.infoItem}>
                     <FiCalendar />
                     <div>
-                      <span>Renews on</span>
+                      <span>
+                        {(userCredits.subscriptionStatus === 'canceled' || 
+                          userCredits.subscriptionStatus === 'cancelled' ||
+                          (subscription && (subscription.status === 'canceled' || subscription.status === 'cancelled'))) ? 
+                          'Cancels on' : 'Renews on'}
+                      </span>
                       <p>{formatDate(userCredits.planEndDate)}</p>
                     </div>
                   </div>
@@ -291,16 +320,34 @@ const Dashboard = () => {
                   </span>
                 </div>
                 
-                {userCredits.subscriptionStatus === 'active' && (
-                  <button 
-                    className={`btn ${styles.cancelBtn}`} 
-                    onClick={cancelSubscription}
-                  >
-                    Cancel Subscription
-                  </button>
-                )}
+                {/* Subscription Management Section */}
+                {userCredits.subscriptionId && subscription ? (
+                  <SubscriptionManager 
+                    subscription={subscription}
+                    onUpdate={handleSubscriptionUpdate}
+                  />
+                ) : userCredits.subscriptionStatus === 'active' && userCredits.subscriptionId ? (
+                  /* Show refresh button when subscription ID exists but data not loaded */
+                  <div className={styles.subscriptionManageSection}>
+                    <h4>Manage Subscription</h4>
+                    <div className={styles.subscriptionBtns}>
+                      <button 
+                        className={styles.cancelButton}
+                        onClick={() => fetchSubscription()}
+                      >
+                        Load Subscription Details
+                      </button>
+                    </div>
+                    <p className={styles.subscriptionNote}>
+                      Subscription ID: {userCredits.subscriptionId}
+                    </p>
+                    <div className={styles.subscriptionCard}>
+                      <p className={styles.loadingNote}>Loading subscription details...</p>
+                    </div>
+                  </div>
+                ) : null}
                 
-                {userCredits.subscriptionStatus === 'canceled' && (
+                {!userCredits.subscriptionId && userCredits.subscriptionStatus === 'canceled' && (
                   <Link href="/#pricing" className="btn btn-cta">
                     Renew Subscription
                   </Link>
@@ -341,6 +388,23 @@ const Dashboard = () => {
             </div>
           </div>
           
+          <div className={styles.creditsInfo}>
+            <div className={styles.infoItem}>
+              <FiZap className={styles.infoIcon} />
+              <div>
+                <strong>Premium Benefits</strong>
+                <p>Unlimited AI text refinement</p>
+              </div>
+            </div>
+            <div className={styles.infoItem}>
+              <FiBarChart2 className={styles.infoIcon} />
+              <div>
+                <strong>Credit Usage</strong>
+                <p>Each summary uses 10-20 credits</p>
+              </div>
+            </div>
+          </div>
+          
           <Link href="/credits" className="btn btn-secondary">
             <FiZap /> Add More Credits
           </Link>
@@ -369,6 +433,10 @@ const Dashboard = () => {
               <span className={styles.statNumber}>0</span>
               <span className={styles.statLabel}>Chat Sessions</span>
             </div>
+          </div>
+          
+          <div className={styles.statsFooter}>
+            Start using ChromeX features to see your usage statistics
           </div>
         </div>
       </div>

@@ -198,21 +198,21 @@ export async function GET(request) {
               quantity: parseInt(quantity)
             }
           ],
-          // Explicitly specify card as payment method to address "mode not enabled for merchant" error
-          // This ensures credit card payment is available regardless of location
-          payment_methods: ['card'],
-          // Let Dodo automatically detect currency based on user's location (same as subscription flow)
+          // Force USD currency and only allow credit/debit card payments to match desired checkout flow
+          currency: "usd", // Force USD currency for all users globally
+          allowed_payment_method_types: [
+            "credit", "debit" // Only allow card payments to match the first image UI
+          ],
           return_url: redirectSuccessUrl,
           cancel_url: redirectCancelUrl,
           auto_redirect: true, // Enable automatic redirect after payment
-          // Required billing field with minimal information
-          // Need to include country but keep it generic
+          // Required billing field with minimal information to match USD checkout flow
           billing: {
             city: 'Not Provided',
-            country: 'IN',        // Using India as default but payment method will still be determined by user's location
+            country: 'US',        // Using US as default to match USD currency checkout flow
             state: 'Not Provided',
             street: 'Not Provided',
-            zipcode: 10001       // Default zipcode
+            zipcode: 10001       // Default US zipcode
           },
           metadata: {
             userId: session.user.id,
@@ -231,9 +231,9 @@ export async function GET(request) {
           ...paymentData,
           has_product_cart: Array.isArray(paymentData.product_cart),
           product_cart_length: paymentData.product_cart?.length || 0,
-          payment_methods: paymentData.payment_methods,
-          // No forced currency - using location-based currency like subscription
-          billing: paymentData.billing || {}
+          currency: paymentData.currency,
+          allowed_payment_types: paymentData.allowed_payment_method_types,
+          billing_country: paymentData.billing?.country
         }, null, 2));
         
         // Create a payment link for credits purchase using the Dodo Payments API

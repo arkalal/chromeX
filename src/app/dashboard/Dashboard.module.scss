@@ -46,6 +46,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1.5rem;
+  align-items: stretch;
   
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -58,6 +59,10 @@
   padding: 1.75rem;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--border-divider);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: flex-start;
   
   .cardHeader {
     display: flex;
@@ -165,22 +170,27 @@
 }
 
 .creditsCard {
+  display: flex;
+  flex-direction: column;
+  
   .creditsAmount {
-    text-align: center;
-    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    margin-top: 1.5rem;
     
     span {
       font-size: 3.5rem;
-      font-weight: 800;
-      color: var(--text-primary);
-      display: block;
-      margin-bottom: 0.25rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      line-height: 1;
     }
     
     p {
-      font-size: 0.95rem;
       color: var(--text-secondary);
-      margin: 0;
+      margin-top: 0.5rem;
+      font-size: 1rem;
     }
   }
   
@@ -190,42 +200,100 @@
     .usageHeader {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      font-size: 0.9rem;
       margin-bottom: 0.5rem;
+      font-size: 0.9rem;
       color: var(--text-secondary);
     }
     
     .progressBarContainer {
-      width: 100%;
-      height: 8px;
-      background-color: rgba(79, 70, 229, 0.1);
-      border-radius: 4px;
+      height: 10px;
+      background-color: #E5E7EB;
+      border-radius: 10px;
       overflow: hidden;
+      
+      .progressBar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-color), var(--primary-color) 70%, #818cf8);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+      }
     }
+  }
+  
+  .creditsInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    margin-top: auto;
     
-    .progressBar {
-      height: 100%;
-      background: linear-gradient(to right, var(--primary-color), var(--accent-color));
-      border-radius: 4px;
-      transition: width 0.5s ease;
+    .infoItem {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      background-color: rgba(79, 70, 229, 0.03);
+      border-radius: 10px;
+      padding: 1rem;
+      border: 1px solid rgba(229, 231, 235, 0.5);
+      
+      .infoIcon {
+        color: var(--primary-color);
+        font-size: 1.25rem;
+        margin-top: 0.125rem;
+      }
+      
+      div {
+        flex: 1;
+        
+        strong {
+          display: block;
+          font-size: 0.9rem;
+          font-weight: 600;
+          margin-bottom: 0.25rem;
+          color: var(--text-primary);
+        }
+        
+        p {
+          margin: 0;
+          font-size: 0.85rem;
+          color: var(--text-secondary);
+          line-height: 1.4;
+        }
+      }
     }
+  }
+  
+  a.btn {
+    margin-top: 0;
   }
 }
 
 .usageCard {
+  display: flex;
+  flex-direction: column;
+  
   .statsGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1.5rem;
+    margin: 1.5rem 0;
+    flex-grow: 1;
     
     .statItem {
       text-align: center;
+      background-color: rgba(79, 70, 229, 0.03);
+      border-radius: 12px;
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(229, 231, 235, 0.5);
       
       .statNumber {
-        font-size: 2rem;
-        font-weight: 800;
-        color: var(--text-primary);
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--primary-color);
         display: block;
         margin-bottom: 0.5rem;
       }
@@ -233,8 +301,19 @@
       .statLabel {
         font-size: 0.85rem;
         color: var(--text-secondary);
+        text-align: center;
+        line-height: 1.2;
       }
     }
+  }
+  
+  .statsFooter {
+    margin-top: auto;
+    text-align: center;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-divider);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
   }
 }
 
@@ -359,4 +438,389 @@
   justify-content: center;
   font-size: 1.25rem;
   color: var(--text-secondary);
+}
+
+// Subscription Manager Styles
+.subscriptionManagerContainer {
+  background-color: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    color: var(--text-primary);
+  }
+  
+  .errorMessage {
+    background-color: #FEE2E2;
+    border-left: 4px solid #EF4444;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+    border-radius: 6px;
+    
+    p {
+      color: #B91C1C;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+  }
+}
+
+.subscriptionDetails {
+  margin-bottom: 1.5rem;
+  
+  .subscriptionDetail {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #E5E7EB;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .detailLabel {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    
+    .detailValue {
+      font-weight: 500;
+      color: var(--text-primary);
+      text-align: right;
+      
+      &.canceled {
+        color: #EF4444;
+        font-weight: 600;
+      }
+      
+      .cancelScheduled {
+        color: #F97316;
+        font-weight: 500;
+        font-style: italic;
+        font-size: 0.9em;
+      }
+    }
+  }
+  
+  .cancellationNotice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #FEF3C7;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    
+    svg {
+      color: #F59E0B;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    
+    span {
+      font-size: 0.875rem;
+      color: #92400E;
+    }
+  }
+}
+
+.subscriptionActions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  
+  button {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+  }
+  
+  .cancelButton {
+    background-color: white;
+    border: 1px solid #EF4444;
+    color: #EF4444;
+    
+    &:hover:not(:disabled) {
+      background-color: #FEE2E2;
+    }
+  }
+  
+  .renewButton {
+    background-color: #4F46E5;
+    border: none;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background-color: #4338CA;
+    }
+  }
+  
+  .spinnerIcon {
+    animation: spin 1s linear infinite;
+  }
+  
+  .errorNote {
+    color: #EF4444;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    text-align: center;
+  }
+}
+
+// Subscription management section styles
+.subscriptionManageSection {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-divider);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  
+  h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+  
+  .subscriptionBtns {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .cancelButton {
+    background-color: #fff;
+    color: #EF4444;
+    border: 1px solid #EF4444;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+  }
+  
+  .subscriptionNote {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+  
+  .subscriptionCard {
+    background-color: #F9FAFB;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+    border: 1px solid #E5E7EB;
+    flex-grow: 1;
+    
+    p {
+      margin: 0;
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+    
+    .loadingNote {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #6B7280;
+      
+      &:before {
+        content: '';
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        margin-right: 8px;
+        border: 2px solid #E5E7EB;
+        border-top-color: #4F46E5;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+    }
+  }
+}
+
+.confirmCancelContainer {
+  width: 100%;
+  
+  h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+  
+  p {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+  
+  .cancelOptions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .directCancelForm {
+    margin-top: 1rem;
+    
+    .subscriptionInput {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      
+      &:focus {
+        outline: none;
+        border-color: #4F46E5;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+      }
+    }
+    
+    .actionButtons {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .backButton {
+      background-color: #F3F4F6;
+      border: 1px solid #D1D5DB;
+      color: #4B5563;
+      border-radius: 8px;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      &:hover:not(:disabled) {
+        background-color: #E5E7EB;
+      }
+      
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+  }
+  
+  .radioOption {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      border-color: #4F46E5;
+    }
+    
+    input[type="radio"] {
+      margin-top: 0.25rem;
+    }
+    
+    div {
+      span {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+      }
+      
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+      }
+    }
+  }
+  
+  .cancelInfo {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(79, 70, 229, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(79, 70, 229, 0.2);
+    
+    .infoIcon {
+      color: var(--primary-color);
+      font-size: 1.25rem;
+      margin-top: 0.125rem;
+    }
+    
+    p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+  }
+  
+  .confirmButtons {
+    display: flex;
+    gap: 1rem;
+    
+    button {
+      flex: 1;
+    }
+    
+    .backButton {
+      background-color: white;
+      border: 1px solid #E5E7EB;
+      color: var(--text-secondary);
+      
+      &:hover:not(:disabled) {
+        background-color: #F9FAFB;
+        border-color: #D1D5DB;
+      }
+    }
+    
+    .confirmCancelButton {
+      background-color: #EF4444;
+      border: none;
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background-color: #DC2626;
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
