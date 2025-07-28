@@ -1,0 +1,180 @@
+.contactContainer {
+  padding: 4rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  color: #111827; // Text primary color from UI theme
+}
+
+.contactWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.backLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #4F46E5; // Primary color from UI theme
+  text-decoration: none;
+  margin-bottom: 1rem;
+  width: fit-content;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: darken(#4F46E5, 10%);
+  }
+}
+
+.contactHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: linear-gradient(90deg, #4F46E5, #F97316);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  p {
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    color: #6B7280; // Text secondary color from UI theme
+  }
+}
+
+.contactCard {
+  background-color: #FFFFFF; // Card surface color from UI theme
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.founderInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #E5E7EB; // Border/divider color from UI theme
+
+  .founderDetails {
+    h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #4F46E5; // Primary color from UI theme
+      margin-bottom: 0.5rem;
+    }
+
+    h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      max-width: 600px;
+      color: #6B7280; // Text secondary color from UI theme
+    }
+  }
+}
+
+.contactMethods {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.contactMethod {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+
+    .contactIcon {
+      background-color: #4F46E5; // Primary color from UI theme
+      color: white;
+      transform: scale(1.1);
+    }
+  }
+
+  .contactIcon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #F9FAFB; // Background light color from UI theme
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+    color: #4F46E5; // Primary color from UI theme
+    transition: all 0.3s ease;
+  }
+
+  .contactInfo {
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    a {
+      display: block;
+      color: #4F46E5; // Primary color from UI theme
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      text-decoration: none;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #F97316; // Accent/CTA color from UI theme
+      }
+    }
+
+    p {
+      font-size: 0.875rem;
+      color: #6B7280; // Text secondary color from UI theme
+    }
+  }
+}
+
+.responsePromise {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  p {
+    color: #6B7280; // Text secondary color from UI theme
+  }
+}

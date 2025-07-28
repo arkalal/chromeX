@@ -20,13 +20,13 @@ const Footer = () => {
               Supercharge your browser with AI writing assistant
             </p>
             <div className={styles.socialLinks}>
-              <a href="#" aria-label="Twitter">
+              <a href="https://x.com/arka_codes" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
                 <FiTwitter />
               </a>
               <a href="#" aria-label="Instagram">
                 <FiInstagram />
               </a>
-              <a href="#" aria-label="LinkedIn">
+              <a href="https://www.linkedin.com/in/arkalal/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
                 <FiLinkedin />
               </a>
               <a href="#" aria-label="GitHub">
@@ -60,7 +60,7 @@ const Footer = () => {
               <h3>Company</h3>
               <ul>
                 <li><a href="#">About</a></li>
-                <li><a href="#contact">Contact</a></li>
+                <li><Link href="/contact">Contact</Link></li>
                 <li><a href="#">Careers</a></li>
                 <li><a href="#">Press Kit</a></li>
               </ul>
@@ -69,10 +69,10 @@ const Footer = () => {
             <div className={styles.footerNavCol}>
               <h3>Legal</h3>
               <ul>
-                <li><a href="#">Privacy Policy</a></li>
-                <li><a href="#">Terms of Service</a></li>
-                <li><a href="#">Cookie Policy</a></li>
-                <li><a href="#">GDPR</a></li>
+                <li><Link href="/legal/privacy-policy">Privacy Policy</Link></li>
+                <li><Link href="/legal/terms-of-service">Terms of Service</Link></li>
+                <li><Link href="/legal/cookie-policy">Cookie Policy</Link></li>
+                <li><Link href="/legal/gdpr">GDPR</Link></li>
               </ul>
             </div>
           </div>

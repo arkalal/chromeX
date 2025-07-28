@@ -1,0 +1,128 @@
+.legalContainer {
+  padding: 4rem 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  color: #111827; // Text primary color from UI theme
+}
+
+.legalWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.backLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #4F46E5; // Primary color from UI theme
+  text-decoration: none;
+  margin-bottom: 1rem;
+  width: fit-content;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: darken(#4F46E5, 10%);
+  }
+}
+
+.legalHeader {
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: linear-gradient(90deg, #4F46E5, #F97316);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: #6B7280; // Text secondary color from UI theme
+  }
+}
+
+.legalContent {
+  background-color: #FFFFFF; // Card surface color from UI theme
+  border-radius: 1rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  padding: 2.5rem;
+
+  section {
+    margin-bottom: 2.5rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      color: #111827; // Text primary color from UI theme
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      color: #111827; // Text primary color from UI theme
+    }
+
+    p {
+      margin-bottom: 1rem;
+      line-height: 1.6;
+      color: #6B7280; // Text secondary color from UI theme
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    ul {
+      margin-bottom: 1.5rem;
+      padding-left: 1.5rem;
+
+      li {
+        margin-bottom: 0.75rem;
+        color: #6B7280; // Text secondary color from UI theme
+        line-height: 1.6;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+
+    a {
+      color: #4F46E5; // Primary color from UI theme
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: #F97316; // Accent/CTA color from UI theme
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .legalContainer {
+    padding: 2rem 1.5rem;
+  }
+
+  .legalContent {
+    padding: 1.5rem;
+  }
+
+  .legalHeader h1 {
+    font-size: 2rem;
+  }
+}
