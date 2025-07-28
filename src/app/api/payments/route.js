@@ -6,7 +6,7 @@ import UserCredits from "../../../../models/UserCredits";
 import { connectToDatabase } from "../../../../lib/mongodb";
 
 // Credit pricing constants
-const CREDIT_UNIT_PRICE = 5; // $5 per 100 credits
+const CREDIT_UNIT_PRICE = 5; // $5 per 400 credits
 
 // Import the Dodo Payments SDK using CommonJS pattern
 const dodopayments = require("dodopayments");
@@ -218,10 +218,10 @@ export async function GET(request) {
             userId: session.user.id,
             type: "credits_purchase",
             quantity: quantity.toString(), // Convert to string as required by Dodo API
-            creditsAmount: (parseInt(quantity) * 100).toString(), // Each unit is 100 credits worth $5
+            creditsAmount: (parseInt(quantity) * 400).toString(), // Each unit is 400 credits worth $5
             unitPrice: CREDIT_UNIT_PRICE.toString(), // $5 per unit
             totalPrice: (parseInt(quantity) * CREDIT_UNIT_PRICE).toString(), // Total price in dollars
-            redirect_success: redirectSuccessUrl + `&credits=${parseInt(quantity) * 100}`,
+            redirect_success: redirectSuccessUrl + `&credits=${parseInt(quantity) * 400}`,
             redirect_cancel: redirectCancelUrl
           }
         };

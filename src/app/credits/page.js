@@ -11,9 +11,9 @@ import styles from './Credits.module.scss';
 // Credit product ID for flexible credits purchase
 const CREDITS_PRODUCT_ID = 'pdt_wMjEgFWeY9k9lt8NGgrd0';
 
-// Credit pricing: $5 per 100 credits (5 cents per credit)
-const CREDIT_UNIT_PRICE = 5; // $5 per 100 credits
-const CREDITS_PER_UNIT = 100; // 100 credits per unit
+// Credit pricing: $5 per 400 credits (1.25 cents per credit)
+const CREDIT_UNIT_PRICE = 5; // $5 per 400 credits
+const CREDITS_PER_UNIT = 400; // 400 credits per unit
 
 const CreditsPage = () => {
   const { data: session, status } = useSession();

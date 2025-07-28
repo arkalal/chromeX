@@ -187,18 +187,34 @@ async function processSuccessfulPayment(payload) {
       const planEndDate = new Date();
       planEndDate.setMonth(planEndDate.getMonth() + 1); // Assuming 1-month subscription
       
+      // Check if user already has credits to avoid duplicates
+      const existingUser = await UserCredits.findOne({ userId });
+      
+      // Calculate the new credit value to ensure it's exactly 2000 for new premium users
+      const updateOperation = existingUser ? {
+        $set: {
+          isPremium: true,
+          subscriptionId,
+          subscriptionStatus: "active",
+          planStartDate: new Date(),
+          planEndDate,
+          // Set credits to exactly 2000 for premium users to avoid stacking or old values
+          credits: 2000
+        }
+      } : {
+        $set: {
+          isPremium: true,
+          subscriptionId,
+          subscriptionStatus: "active",
+          planStartDate: new Date(),
+          planEndDate,
+        },
+        $inc: { credits: 2000 } // Add 2,000 credits for premium signup
+      };
+      
       const updateResult = await UserCredits.findOneAndUpdate(
         { userId },
-        {
-          $set: {
-            isPremium: true,
-            subscriptionId,
-            subscriptionStatus: "active",
-            planStartDate: new Date(),
-            planEndDate,
-          },
-          $inc: { credits: 2000 } // Add 2,000 credits for premium signup
-        },
+        updateOperation,
         { upsert: true, new: true }
       );
       

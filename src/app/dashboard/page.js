@@ -374,10 +374,31 @@ const Dashboard = () => {
             <p>available credits</p>
           </div>
           
+          <div className={styles.creditsBreakdown}>
+            {userCredits?.isPremium && (
+              <div className={styles.creditDetail}>
+                <span className={styles.creditLabel}>Initial Premium Credits:</span>
+                <span className={styles.creditValue}>2,000</span>
+              </div>
+            )}
+            {userCredits?.additionalCredits > 0 && (
+              <div className={styles.creditDetail}>
+                <span className={styles.creditLabel}>Additional Credits:</span>
+                <span className={styles.creditValue}>{userCredits.additionalCredits.toLocaleString()}</span>
+              </div>
+            )}
+            {userCredits?.usedCredits > 0 && (
+              <div className={styles.creditDetail}>
+                <span className={styles.creditLabel}>Credits Used:</span>
+                <span className={styles.creditValue}>{userCredits.usedCredits.toLocaleString()}</span>
+              </div>
+            )}
+          </div>
+          
           <div className={styles.creditsUsage}>
             <div className={styles.usageHeader}>
               <span>Credit Usage</span>
-              <span>{userCredits?.credits || 0} / 2000</span>
+              <span>{userCredits?.credits || 0} remaining</span>
             </div>
             
             <div className={styles.progressBarContainer}>

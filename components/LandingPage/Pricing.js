@@ -168,7 +168,7 @@ const Pricing = () => {
                     <div className={styles.creditActions}>
                       <div className={styles.creditCounter}>
                         <button onClick={decreaseCredits} className={styles.counterBtn}>-</button>
-                        <span>${addingCredits * 5} ({addingCredits * 500} credits)</span>
+                        <span>${addingCredits * 5} ({addingCredits * 400} credits)</span>
                         <button onClick={increaseCredits} className={styles.counterBtn}>+</button>
                       </div>
                       <button 
