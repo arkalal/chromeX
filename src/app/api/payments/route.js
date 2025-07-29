@@ -4,6 +4,7 @@ import { auth } from "../../../../src/auth";
 import { NextResponse } from "next/server";
 import UserCredits from "../../../../models/UserCredits";
 import { connectToDatabase } from "../../../../lib/mongodb";
+import { validateRequired, validateRange, validateObjectId } from "../../../../utils/validation";
 
 // Credit pricing constants
 const CREDIT_UNIT_PRICE = 5; // $5 per 400 credits
@@ -23,75 +24,104 @@ if (!apiKey) {
   throw new Error('Missing API key');
 }
 
-// Log API key format (securely - only showing partial)
-const firstPart = apiKey.substring(0, 5); 
-const lastPart = apiKey.substring(apiKey.length - 5);
-console.log(`API key format check: ${firstPart}*****${lastPart} (length: ${apiKey.length})`);
-
-// Initialize client with AUTH HEADER rather than direct param
+// Securely initialize the client without logging sensitive data
 const client = new DodoPayments({
   headers: {
     Authorization: `Bearer ${apiKey}`
   },
-  apiKey: apiKey, // Try both approaches at once
-  environment: 'test_mode',
-  debug: true
+  apiKey: apiKey,
+  environment: process.env.NODE_ENV === 'production' ? 'production' : 'test_mode',
+  debug: process.env.NODE_ENV !== 'production'
 });
 
-// Test connection by accessing a property that should exist
-console.log('✅ Dodo client initialized, client.subscriptions exists:', !!client.subscriptions);
+// Log initialization status without exposing key details
+if (process.env.NODE_ENV !== 'production') {
+  console.log('✅ Dodo client initialized:', { 
+    initialized: !!client, 
+    hasSubscriptions: !!client.subscriptions,
+    environment: process.env.NODE_ENV
+  });
+}
 
 
+/**
+ * Secure payment link generation endpoint
+ * @param {Request} request - The incoming request
+ */
 export async function GET(request) {
   try {
+    // Authenticate user
     const session = await auth();
     
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     
-    // Get the URL params
+    // Get the URL params with validation
     const { searchParams } = new URL(request.url);
     const productId = searchParams.get('productId');
     const type = searchParams.get('type'); // 'subscription' or 'credits'
-    const quantity = searchParams.get('quantity') || 1;
+    const quantityParam = searchParams.get('quantity') || '1';
     
-    if (!productId || !type) {
+    // Validate required parameters
+    if (!validateRequired({ productId, type }, ['productId', 'type'])) {
       return NextResponse.json({ error: "Missing required parameters" }, { status: 400 });
     }
     
-    // Base URL for redirection after payment
-    // Use the request origin to determine the base URL
+    // Validate parameter types
+    if (type !== 'subscription' && type !== 'credits') {
+      return NextResponse.json({ error: "Invalid payment type" }, { status: 400 });
+    }
+    
+    // Convert and validate quantity
+    const quantity = parseInt(quantityParam, 10);
+    if (isNaN(quantity) || !validateRange(quantity, 1, 100)) {
+      return NextResponse.json({ error: "Invalid quantity" }, { status: 400 });
+    }
+    
+    // Base URL for redirection after payment - security enhanced version
     let baseUrl;
     
-    // Get the request headers to detect if we're using ngrok
+    // Get the request headers for URL determination
     const host = request.headers.get('host') || '';
     const origin = request.headers.get('origin') || '';
     const referer = request.headers.get('referer') || '';
     
-    // Log the headers for debugging
-    console.log('Payment request headers:', { host, origin, referer });
-    
-    // First check for the ngrok URL in the current request
-    if (host.includes('ngrok') || origin.includes('ngrok') || referer.includes('ngrok')) {
-      // Extract ngrok URL from origin or referer or host
-      const ngrokUrl = origin || referer || `https://${host}`;
-      baseUrl = ngrokUrl.split('/').slice(0, 3).join('/');
-      console.log('Using ngrok URL from request headers for redirect:', baseUrl);
+    // In production, always use the configured base URL
+    if (process.env.NODE_ENV === 'production') {
+      baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      
+      // Ensure we have a valid base URL
+      if (!baseUrl) {
+        console.error('NEXT_PUBLIC_BASE_URL is not set in production environment');
+        return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+      }
     } 
-    // If we know we're running with ngrok, use the current ngrok URL
-    // This is a hardcoded fallback for development
-    else if (process.env.NODE_ENV !== 'production') {
-      // For development, check if we have a known ngrok domain being used
-      // This is the URL shown in the ngrok dashboard when you start it
-      baseUrl = 'https://3127103a28a2.ngrok-free.app';
-      console.log('Using hardcoded ngrok URL for development redirect:', baseUrl);
-    } 
-    // Otherwise use the configured base URL
+    // In development, dynamically determine the base URL
     else {
-      // Use the configured base URL or default to localhost
-      baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-      console.log('Using configured base URL for redirect:', baseUrl);
+      // Use the request origin if available
+      if (origin) {
+        baseUrl = origin;
+      }
+      // Use referer as fallback
+      else if (referer) {
+        const refererUrl = new URL(referer);
+        baseUrl = `${refererUrl.protocol}//${refererUrl.host}`;
+      }
+      // Use host as last resort
+      else if (host) {
+        const protocol = host.includes('localhost') ? 'http' : 'https';
+        baseUrl = `${protocol}://${host}`;
+      }
+      // Default local development URL
+      else {
+        baseUrl = process.env.NEXT_PUBLIC_DEV_URL || 'http://localhost:3000';
+      }
+      
+      // For development logging only
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Development redirect base URL:', baseUrl);
+      }
     }
     
     // Create more specific redirect URLs with proper format for auto-redirection
@@ -266,12 +296,14 @@ export async function GET(request) {
         
         console.error('Detailed error information:', JSON.stringify(errorDetails, null, 2));
         
-        // Return more detailed error information to the client
+        // Log detailed error information but return generic error to client
+        console.error('Detailed payment error:', JSON.stringify(errorDetails, null, 2));
+        
+        // Return a generic error message in production to avoid leaking implementation details
         return NextResponse.json({
-          error: `Payment link generation failed: ${error.message || 'Unknown error'}`,
-          errorCode: error.code || error.status,
-          errorType: error.type,
-          details: errorDetails
+          error: process.env.NODE_ENV === 'production' 
+            ? "Payment processing failed. Please try again later." 
+            : `Payment link generation failed: ${error.message || 'Unknown error'}`
         }, { status: error.status || 500 });
       }
     }
