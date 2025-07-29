@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
@@ -100,7 +100,7 @@ const PaymentFailedModal = ({ errorMessage, onClose }) => {
   );
 };
 
-const Dashboard = () => {
+const DashboardContent = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -462,6 +462,15 @@ const Dashboard = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+// Main Dashboard component with Suspense boundary
+const Dashboard = () => {
+  return (
+    <Suspense fallback={<div className={styles.loading}>Loading...</div>}>
+      <DashboardContent />
+    </Suspense>
   );
 };
 

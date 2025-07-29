@@ -1,3 +1,5 @@
+@use "sass:color";
+
 .contactContainer {
   padding: 4rem 2rem;
   max-width: 1200px;
@@ -23,7 +25,7 @@
   transition: color 0.2s ease;
 
   &:hover {
-    color: darken(#4F46E5, 10%);
+    color: color.adjust(#4F46E5, $lightness: -10%);
   }
 }
 
