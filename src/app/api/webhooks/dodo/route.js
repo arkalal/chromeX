@@ -2,47 +2,20 @@ import { NextResponse } from 'next/server';
 import { Webhook } from "standardwebhooks";
 import { connectToDatabase } from "../../../../../lib/mongodb";
 import UserCredits from "../../../../../models/UserCredits";
-import crypto from 'crypto';
-import { validateRequired, validateObjectId } from "../../../../../utils/validation";
-import { secureLogger } from "../../../../../utils/secureLogger";
-import { RATE_LIMITS } from "../../../../../utils/securityConfig";
-import { rateLimit } from "../../../../../utils/rateLimiter";
 
 const webhook = new Webhook(process.env.DODO_WEBHOOK_KEY);
 
-/**
- * Webhook handler for Dodo Payments events
- * Implements secure validation, rate limiting, and proper error handling
- */
+// Next.js 15 compatible webhook handler
 export async function POST(request) {
   try {
-    // Apply rate limiting specific to webhooks
-    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
-    const rateLimitResult = rateLimit(ip, RATE_LIMITS.WEBHOOK.limit, RATE_LIMITS.WEBHOOK.windowMs);
-    
-    if (rateLimitResult.limited) {
-      secureLogger.warn('Webhook rate limit exceeded', { ip, remaining: rateLimitResult.remaining });
-      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
-    }
-    
     // Get the raw request body for parsing
     const rawBody = await request.text();
-    if (!rawBody || rawBody.length === 0) {
-      secureLogger.warn('Empty webhook payload received');
-      return NextResponse.json({ error: 'Empty request body' }, { status: 400 });
-    }
     
-    // Get and validate required headers
+    // Get the headers from the request object directly instead of using the headers() function
+    // This avoids the Next.js 15 warning about using headers().get()
     const webhookId = request.headers.get("webhook-id") || "";
     const webhookSignature = request.headers.get("webhook-signature") || "";
     const webhookTimestamp = request.headers.get("webhook-timestamp") || "";
-    
-    // Validate required headers
-    if (!validateRequired({ webhookId, webhookSignature, webhookTimestamp }, 
-        ['webhookId', 'webhookSignature', 'webhookTimestamp'])) {
-      secureLogger.warn('Missing required webhook headers');
-      return NextResponse.json({ error: 'Missing required webhook headers' }, { status: 400 });
-    }
     
     const webhookHeaders = {
       "webhook-id": webhookId,
@@ -50,7 +23,7 @@ export async function POST(request) {
       "webhook-timestamp": webhookTimestamp,
     };
     
-    secureLogger.info("Webhook received", {
+    console.log("Webhook received with headers:", {
       id: webhookId.substring(0, 10) + "...",
       timestamp: webhookTimestamp,
       hasSignature: !!webhookSignature,
@@ -60,19 +33,16 @@ export async function POST(request) {
     let signatureVerified = false;
     try {
       await webhook.verify(rawBody, webhookHeaders);
-      secureLogger.info("Webhook signature verified successfully");
+      console.log("Webhook signature verified successfully");
       signatureVerified = true;
     } catch (verifyError) {
-      secureLogger.error('Webhook signature verification failed', verifyError);
+      console.error('Webhook signature verification failed:', verifyError);
       
-      // Always verify signatures in all environments, but provide detailed logs in development
-      if (process.env.NODE_ENV === 'development') {
-        console.warn('⚠️ Development mode: Signature verification failed but continuing for testing purposes');
-        console.warn('⚠️ In production, this request would be rejected!');
-        // Log what we received to help debugging
-        console.log('Received webhook payload:', rawBody.substring(0, 200) + '...');
-      } else {
-        // In production, always reject invalid signatures
+      // Check if we're in production or development
+      const isDevelopment = process.env.NODE_ENV === 'development';
+      
+      if (!isDevelopment) {
+        // In production, return error for invalid signatures
         return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 401 });
       }
       
