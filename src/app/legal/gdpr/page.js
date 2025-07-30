@@ -24,8 +24,8 @@ const GDPRPage = () => {
           <section>
             <h2>1. Introduction</h2>
             <p>
-              This GDPR Compliance Statement explains how ChromeX (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) complies with the 
-              General Data Protection Regulation (GDPR) with respect to the personal data we process. ChromeX 
+              This GDPR Compliance Statement explains how BrowzPot (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) complies with the 
+              General Data Protection Regulation (GDPR) with respect to the personal data we process. BrowzPot 
               is committed to ensuring the protection of personal data and respecting the privacy rights of 
               individuals in the European Economic Area (EEA).
             </p>
@@ -34,7 +34,7 @@ const GDPRPage = () => {
           <section>
             <h2>2. Data Controller</h2>
             <p>
-              For the purposes of the GDPR, ChromeX acts as a data controller for personal data 
+              For the purposes of the GDPR, BrowzPot acts as a data controller for personal data 
               processed through our services. This means we determine the purposes and means of processing 
               personal data.
             </p>

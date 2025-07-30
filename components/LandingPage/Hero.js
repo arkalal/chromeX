@@ -27,7 +27,7 @@ const Hero = () => {
           >
             Write better emails, documents, and messages anywhere on the web.
             Refine your text, get summaries, and chat with any content using
-            ChromeX AI.
+            BrowzPot AI.
           </motion.p>
 
           <motion.div
@@ -91,7 +91,7 @@ const Hero = () => {
                   </div>
                   <div className={styles.aiPopup}>
                     <div className={styles.aiHeader}>
-                      <div className={styles.aiLogo}>ChromeX</div>
+                      <div className={styles.aiLogo}>BrowzPot</div>
                       <div className={styles.aiOptions}>
                         <button>Refine</button>
                         <button className={styles.active}>Rewrite</button>

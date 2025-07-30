@@ -10,20 +10,20 @@ const FAQ = () => {
 
   const faqs = [
     {
-      question: "How does ChromeX work?",
-      answer: "ChromeX is a browser extension that integrates AI capabilities directly into your browsing experience. It works by analyzing the content of the page you're viewing or the text you're writing, and provides AI-powered assistance like writing suggestions, summarization, and more."
+      question: "How does BrowzPot work?",
+      answer: "BrowzPot is a browser extension that integrates AI capabilities directly into your browsing experience. It works by analyzing the content of the page you're viewing or the text you're writing, and provides AI-powered assistance like writing suggestions, summarization, and more."
     },
     {
-      question: "Is my data secure with ChromeX?",
+      question: "Is my data secure with BrowzPot?",
       answer: "Yes, your privacy is our top priority. All data processing happens through secure channels, and we don't store your personal content or browsing history. Our AI models only process the data needed to provide the service you request, and nothing more."
     },
     {
-      question: "Will ChromeX slow down my browser?",
-      answer: "No, ChromeX is designed to be lightweight and efficient. The extension uses minimal resources when idle and intelligently manages memory usage. The AI processing happens on our secure servers, not on your device, ensuring smooth performance."
+      question: "Will BrowzPot slow down my browser?",
+      answer: "No, BrowzPot is designed to be lightweight and efficient. The extension uses minimal resources when idle and intelligently manages memory usage. The AI processing happens on our secure servers, not on your device, ensuring smooth performance."
     },
     {
-      question: "Can I use ChromeX on any website?",
-      answer: "Yes! ChromeX works on virtually any website where you can input text or read content. This includes email services, social media platforms, document editors, and more. Some websites with strict content security policies might have limitations."
+      question: "Can I use BrowzPot on any website?",
+      answer: "Yes! BrowzPot works on virtually any website where you can input text or read content. This includes email services, social media platforms, document editors, and more. Some websites with strict content security policies might have limitations."
     },
     {
       question: "What's the difference between the free and paid versions?",
@@ -50,7 +50,7 @@ const FAQ = () => {
           transition={{ duration: 0.6 }}
         >
           <h2>Frequently Asked Questions</h2>
-          <p>Everything you need to know about ChromeX</p>
+          <p>Everything you need to know about BrowzPot</p>
         </motion.div>
         
         <div className={styles.faqContainer}>

@@ -16,7 +16,7 @@ function loadRefineStyles() {
   
   // Append to document head
   document.head.appendChild(link);
-  console.log('ChromeX: Loaded Gmail refine styles');
+  console.log('BrowzPot: Loaded Gmail refine styles');
 }
 
 export { loadRefineStyles };

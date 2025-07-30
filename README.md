@@ -1,6 +1,6 @@
-# ChromeX
+# BrowzPot
 
-A powerful Chrome extension that enhances your writing experience with AI. ChromeX integrates directly into Gmail and other applications, providing AI-powered writing assistance right where you need it.
+A powerful Chrome extension that enhances your writing experience with AI. BrowzPot integrates directly into Gmail and other applications, providing AI-powered writing assistance right where you need it.
 
 ## Features
 

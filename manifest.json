@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "ChromeX",
+  "name": "BrowzPot",
   "version": "1.0.0",
   "description": "Enhance your writing with AI across any website",
   "permissions": [

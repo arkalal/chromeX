@@ -24,9 +24,8 @@ const TermsOfService = () => {
           <section>
             <h2>1. Agreement to Terms</h2>
             <p>
-              These Terms of Service (&quot;Terms&quot;) govern your access to
-              and use of the ChromeX browser extension and website
-              (collectively, the &quot;Service&quot;). Please read these Terms
+              Welcome to BrowzPot. These Terms of Service (&quot;Terms&quot;) govern your access to
+              and use of the BrowzPot Services (collectively, the &quot;BrowzPot Services&quot;). Please read these Terms
               carefully before using the Service.
             </p>
             <p>
@@ -40,14 +39,14 @@ const TermsOfService = () => {
             <h2>2. Intellectual Property Rights</h2>
             <p>
               The Service and its original content, features, and functionality
-              are and will remain the exclusive property of ChromeX and its
+              are and will remain the exclusive property of BrowzPot and its
               licensors. The Service is protected by copyright, trademark, and
               other laws.
             </p>
             <p>
               Our trademarks and trade dress may not be used in connection with
               any product or service without the prior written consent of
-              ChromeX.
+              BrowzPot.
             </p>
           </section>
 
@@ -135,7 +134,7 @@ const TermsOfService = () => {
           <section>
             <h2>7. Limitation of Liability</h2>
             <p>
-              In no event shall ChromeX, nor its directors, employees, partners,
+              In no event shall BrowzPot, nor its directors, employees, partners,
               agents, suppliers, or affiliates, be liable for any indirect,
               incidental, special, consequential, or punitive damages, including
               without limitation, loss of profits, data, use, goodwill, or other

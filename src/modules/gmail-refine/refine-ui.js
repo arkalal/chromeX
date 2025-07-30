@@ -332,7 +332,7 @@ function extractGmailStructure(container) {
 function createRefineButton() {
   const refineButton = document.createElement('button');
   refineButton.textContent = 'Refine';
-  refineButton.className = 'chromex-refine-button';
+  refineButton.className = 'browzpot-refine-button';
   
   // Apply styling as per requirements - transparent bg, blue border with radius
   refineButton.style.cssText = `
@@ -366,7 +366,7 @@ function createRefineButton() {
 function createRefineModal(emailContent) {
   // Create modal container
   const modal = document.createElement('div');
-  modal.className = 'chromex-refine-modal';
+  modal.className = 'browzpot-refine-modal';
   modal.style.cssText = `
     position: fixed;
     top: 0;
@@ -382,7 +382,7 @@ function createRefineModal(emailContent) {
   
   // Create modal content
   const modalContent = document.createElement('div');
-  modalContent.className = 'chromex-refine-modal-content';
+  modalContent.className = 'browzpot-refine-modal-content';
   modalContent.style.cssText = `
     background-color: white;
     padding: 20px;
@@ -408,7 +408,7 @@ function createRefineModal(emailContent) {
   
   // Logo
   const logo = document.createElement('div');
-  logo.textContent = 'ChromeX';
+  logo.textContent = 'BrowzPot';
   logo.style.cssText = `
     font-size: 20px;
     font-weight: bold;
@@ -424,12 +424,12 @@ function createRefineModal(emailContent) {
   
   const refineTab = document.createElement('button');
   refineTab.textContent = 'Refine';
-  refineTab.className = 'chromex-tab active';
+  refineTab.className = 'browzpot-tab active';
   refineTab.dataset.tab = 'refine';
   
   const rewriteTab = document.createElement('button');
   rewriteTab.textContent = 'Rewrite';
-  rewriteTab.className = 'chromex-tab';
+  rewriteTab.className = 'browzpot-tab';
   rewriteTab.dataset.tab = 'rewrite';
   
   // Style tabs
@@ -453,7 +453,7 @@ function createRefineModal(emailContent) {
   
   // Create body content that will change based on active tab
   const body = document.createElement('div');
-  body.className = 'chromex-refine-body';
+  body.className = 'browzpot-refine-body';
   body.style.cssText = `
     flex-grow: 1;
     overflow-y: auto;
@@ -462,12 +462,12 @@ function createRefineModal(emailContent) {
   
   // Create refine content (shown by default)
   const refineContent = document.createElement('div');
-  refineContent.className = 'chromex-refine-content';
+  refineContent.className = 'browzpot-refine-content';
   refineContent.style.display = 'block';
   
   // Create rewrite content (hidden by default)
   const rewriteContent = document.createElement('div');
-  rewriteContent.className = 'chromex-rewrite-content';
+  rewriteContent.className = 'browzpot-rewrite-content';
   rewriteContent.style.display = 'none';
   
   // Add email content textarea (readonly for refine, editable for rewrite)
@@ -475,7 +475,7 @@ function createRefineModal(emailContent) {
   const parsedEmailContent = parseGmailContent(emailContent);
   
   const emailTextarea = document.createElement('textarea');
-  emailTextarea.className = 'chromex-email-content';
+  emailTextarea.className = 'browzpot-email-content';
   emailTextarea.value = parsedEmailContent;
   emailTextarea.readOnly = true; // Initially readonly for refine mode
   emailTextarea.style.cssText = `
@@ -498,7 +498,7 @@ function createRefineModal(emailContent) {
   
   // Add tone options for refine
   const toneOptionsContainer = document.createElement('div');
-  toneOptionsContainer.className = 'chromex-tone-options';
+  toneOptionsContainer.className = 'browzpot-tone-options';
   toneOptionsContainer.style.cssText = `
     display: flex;
     flex-wrap: wrap;
@@ -510,7 +510,7 @@ function createRefineModal(emailContent) {
     const toneButton = document.createElement('button');
     toneButton.textContent = tone.label;
     toneButton.dataset.tone = tone.id;
-    toneButton.className = 'chromex-tone-option';
+    toneButton.className = 'browzpot-tone-option';
     toneButton.style.cssText = `
       padding: 8px 16px;
       background-color: white;
@@ -522,7 +522,7 @@ function createRefineModal(emailContent) {
     
     toneButton.addEventListener('click', () => {
       // Remove active class from all
-      document.querySelectorAll('.chromex-tone-option').forEach(btn => {
+      document.querySelectorAll('.browzpot-tone-option').forEach(btn => {
         btn.style.backgroundColor = 'white';
         btn.style.borderColor = '#E5E7EB';
         btn.style.color = '#6B7280';
@@ -541,7 +541,7 @@ function createRefineModal(emailContent) {
   
   // Create prompt input for rewrite
   const promptContainer = document.createElement('div');
-  promptContainer.className = 'chromex-prompt-container';
+  promptContainer.className = 'browzpot-prompt-container';
   promptContainer.style.cssText = `
     margin-top: 15px;
     margin-bottom: 15px;
@@ -556,7 +556,7 @@ function createRefineModal(emailContent) {
   `;
   
   const promptInput = document.createElement('textarea');
-  promptInput.className = 'chromex-prompt-input';
+  promptInput.className = 'browzpot-prompt-input';
   promptInput.placeholder = 'e.g., Make this email more persuasive and include a call to action';
   promptInput.style.cssText = `
     width: 100%;
@@ -575,7 +575,7 @@ function createRefineModal(emailContent) {
   
   // Add action buttons
   const actionsContainer = document.createElement('div');
-  actionsContainer.className = 'chromex-actions';
+  actionsContainer.className = 'browzpot-actions';
   actionsContainer.style.cssText = `
     display: flex;
     justify-content: flex-end;
@@ -586,7 +586,7 @@ function createRefineModal(emailContent) {
   // Cancel button
   const cancelButton = document.createElement('button');
   cancelButton.textContent = 'Cancel';
-  cancelButton.className = 'chromex-cancel-button';
+  cancelButton.className = 'browzpot-cancel-button';
   cancelButton.style.cssText = `
     padding: 8px 16px;
     background-color: white;
@@ -598,7 +598,7 @@ function createRefineModal(emailContent) {
   // Action button (changes based on tab)
   const actionButton = document.createElement('button');
   actionButton.textContent = 'Update Email';
-  actionButton.className = 'chromex-action-button';
+  actionButton.className = 'browzpot-action-button';
   actionButton.style.cssText = `
     padding: 8px 16px;
     background-color: #4F46E5;
@@ -611,7 +611,7 @@ function createRefineModal(emailContent) {
   // Apply button (shows after email is updated)
   const applyButton = document.createElement('button');
   applyButton.textContent = 'Apply';
-  applyButton.className = 'chromex-apply-button';
+  applyButton.className = 'browzpot-apply-button';
   applyButton.style.cssText = `
     padding: 8px 16px;
     background-color: #4F46E5;
@@ -668,20 +668,20 @@ function createRefineModal(emailContent) {
       return refineContent.style.display === 'block' ? 'refine' : 'rewrite';
     },
     getSelectedTone: () => {
-      const activeButton = document.querySelector('.chromex-tone-option[style*="background-color: rgb(79, 70, 229)"]');
+      const activeButton = document.querySelector('.browzpot-tone-option[style*="background-color: rgb(79, 70, 229)"]');
       return activeButton ? activeButton.dataset.tone : 'professional';
     },
     getEmailContent: () => {
       return rewriteContent.style.display === 'block' 
         ? editableEmailTextarea.value 
-        : refineContent.querySelector('.chromex-email-content').value;
+        : refineContent.querySelector('.browzpot-email-content').value;
     },
     getPrompt: () => {
       return promptInput.value;
     },
     updateEmailContent: (content) => {
       if (refineContent.style.display === 'block') {
-        refineContent.querySelector('.chromex-email-content').value = content;
+        refineContent.querySelector('.browzpot-email-content').value = content;
       } else {
         editableEmailTextarea.value = content;
       }

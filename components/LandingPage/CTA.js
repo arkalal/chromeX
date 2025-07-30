@@ -17,7 +17,7 @@ const CTA = () => {
             transition={{ duration: 0.6 }}
           >
             <h2>Ready to Transform Your Online Experience?</h2>
-            <p>Join thousands of users who are already writing better, faster, and smarter with ChromeX.</p>
+            <p>Join thousands of users who are already writing better, faster, and smarter with BrowzPot.</p>
             
             <div className={styles.ctaButtons}>
               <button className="btn btn-cta">
@@ -48,7 +48,7 @@ const CTA = () => {
                 <circle cx="50" cy="50" r="20" fill="white" />
                 <circle cx="50" cy="50" r="15" fill="#F97316" />
               </svg>
-              <div className={styles.iconText}>ChromeX</div>
+              <div className={styles.iconText}>BrowzPot</div>
             </div>
           </motion.div>
         </div>

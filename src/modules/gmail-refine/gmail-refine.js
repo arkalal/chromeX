@@ -18,21 +18,21 @@ let currentRefineInstances = new Map();
  */
 function addRefineButtonToGmail(composeBox) {
   // Check if we've already added a refine button to this compose box or its parent
-  if (composeBox.querySelector('.chromex-refine-button') || 
-      composeBox.parentElement.querySelector('.chromex-refine-button') || 
-      document.querySelector(`.chromex-refine-button[data-compose-id="${composeBox.getAttribute('data-chromex-id')}"]`)) {
+  if (composeBox.querySelector('.browzpot-refine-button') || 
+      composeBox.parentElement.querySelector('.browzpot-refine-button') || 
+      document.querySelector(`.browzpot-refine-button[data-compose-id="${composeBox.getAttribute('data-browzpot-id')}"]`)) {
     return;
   }
   
   // Give this compose box a unique identifier if it doesn't have one
-  if (!composeBox.getAttribute('data-chromex-id')) {
-    composeBox.setAttribute('data-chromex-id', `compose-${Date.now()}`);
+  if (!composeBox.getAttribute('data-browzpot-id')) {
+    composeBox.setAttribute('data-browzpot-id', `compose-${Date.now()}`);
   }
   
   // Create refine button
   const refineButton = createRefineButton();
   // Link this button to this specific compose box
-  refineButton.setAttribute('data-compose-id', composeBox.getAttribute('data-chromex-id'));
+  refineButton.setAttribute('data-compose-id', composeBox.getAttribute('data-browzpot-id'));
   
   // Add click event to show refine modal
   refineButton.addEventListener('click', (e) => {
@@ -55,7 +55,7 @@ function addRefineButtonToGmail(composeBox) {
         const selectedTone = refineModal.getSelectedTone();
         
         // Show loading state
-        const actionBtn = refineModal.modal.querySelector('.chromex-action-button');
+        const actionBtn = refineModal.modal.querySelector('.browzpot-action-button');
         const originalBtnText = actionBtn.textContent;
         actionBtn.textContent = 'Processing...';
         actionBtn.disabled = true;
@@ -91,7 +91,7 @@ function addRefineButtonToGmail(composeBox) {
         }
         
         // Show loading state
-        const actionBtn = refineModal.modal.querySelector('.chromex-action-button');
+        const actionBtn = refineModal.modal.querySelector('.browzpot-action-button');
         const originalBtnText = actionBtn.textContent;
         actionBtn.textContent = 'Processing...';
         actionBtn.disabled = true;
@@ -603,7 +603,7 @@ function initGmailRefine() {
   // Load refine styles
   loadRefineStyles();
   
-  console.log('ChromeX: Initializing Gmail refine functionality');
+  console.log('BrowzPot: Initializing Gmail refine functionality');
   
   // Check for existing compose boxes on page load
   const existingComposeBoxes = document.querySelectorAll('div[role="textbox"][aria-label="Message Body"]');
@@ -624,7 +624,7 @@ function initGmailRefine() {
           if (node.nodeType === Node.ELEMENT_NODE) {
             if (node.getAttribute('role') === 'textbox' && 
                 node.getAttribute('aria-label') === 'Message Body') {
-              console.log('ChromeX: Detected new Gmail compose box');
+              console.log('BrowzPot: Detected new Gmail compose box');
               // Only add the button if there's content
               if (composeBoxHasContent(node)) {
                 addRefineButtonToGmail(node);
@@ -634,7 +634,7 @@ function initGmailRefine() {
             // Check if children contain compose boxes
             const composeBoxes = node.querySelectorAll('div[role="textbox"][aria-label="Message Body"]');
             composeBoxes.forEach(composeBox => {
-              console.log('ChromeX: Detected new Gmail compose box (child)');
+              console.log('BrowzPot: Detected new Gmail compose box (child)');
               // Only add the button if there's content
               if (composeBoxHasContent(composeBox)) {
                 addRefineButtonToGmail(composeBox);
@@ -654,9 +654,9 @@ function initGmailRefine() {
           
           // Check if it has content now
           const hasContent = composeBoxHasContent(composeBox);
-          const hasButton = composeBox.querySelector('.chromex-refine-button') || 
-                           composeBox.parentElement.querySelector('.chromex-refine-button') || 
-                           document.querySelector(`.chromex-refine-button[data-compose-id="${composeBox.getAttribute('data-chromex-id')}"]`);
+          const hasButton = composeBox.querySelector('.browzpot-refine-button') || 
+                           composeBox.parentElement.querySelector('.browzpot-refine-button') || 
+                           document.querySelector(`.browzpot-refine-button[data-compose-id="${composeBox.getAttribute('data-browzpot-id')}"]`);
           
           // Add button if there's content and no button yet
           if (hasContent && !hasButton) {
@@ -677,7 +677,7 @@ function initGmailRefine() {
     subtree: true
   });
   
-  console.log('ChromeX: Gmail refine functionality initialized');
+  console.log('BrowzPot: Gmail refine functionality initialized');
 }
 
 export { initGmailRefine };

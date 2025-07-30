@@ -10,19 +10,19 @@ const Testimonials = () => {
     {
       name: "Sarah Johnson",
       role: "Content Creator",
-      comment: "ChromeX has completely changed how I write online. I can draft emails, social posts, and articles in half the time with twice the quality. The AI suggestions are spot-on!",
+      comment: "BrowzPot has completely changed how I write online. I can draft emails, social posts, and articles in half the time with twice the quality. The AI suggestions are spot-on!",
       rating: 5
     },
     {
       name: "Michael Chen",
       role: "Software Developer",
-      comment: "As a developer, I love how ChromeX helps me understand complex documentation. The summarize feature is a game-changer when reviewing technical content.",
+      comment: "As a developer, I love how BrowzPot helps me understand complex documentation. The summarize feature is a game-changer when reviewing technical content.",
       rating: 5
     },
     {
       name: "Emily Rodriguez",
       role: "Digital Marketer",
-      comment: "The ability to save notes across different websites has been incredible for my research. ChromeX's new tab dashboard keeps everything organized and accessible.",
+      comment: "The ability to save notes across different websites has been incredible for my research. BrowzPot's new tab dashboard keeps everything organized and accessible.",
       rating: 5
     }
   ];

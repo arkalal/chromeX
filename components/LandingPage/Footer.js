@@ -14,7 +14,7 @@ const Footer = () => {
         <div className={styles.footerTop}>
           <div className={styles.footerBrand}>
             <Link href="/" className={styles.footerLogo}>
-              <span>ChromeX</span>
+              <span>BrowzPot</span>
             </Link>
             <p className={styles.footerTagline}>
               Supercharge your browser with AI writing assistant
@@ -80,11 +80,11 @@ const Footer = () => {
         
         <div className={styles.footerBottom}>
           <div className={styles.copyright}>
-            &copy; {currentYear} ChromeX AI. All rights reserved.
+            &copy; {currentYear} BrowzPot AI. All rights reserved.
           </div>
           
           <div className={styles.madeWith}>
-            <span>Made with</span> <span className={styles.heart}>❤️</span> <span>by the ChromeX team</span>
+            <span>Made with</span> <span className={styles.heart}>❤️</span> <span>by the BrowzPot team</span>
           </div>
         </div>
       </div>

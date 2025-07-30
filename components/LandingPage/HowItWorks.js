@@ -11,7 +11,7 @@ const HowItWorks = () => {
   const steps = [
     {
       title: "Install the Extension",
-      description: "Add ChromeX to your browser with one click. Available on the Chrome Web Store.",
+      description: "Add BrowzPot to your browser with one click. Available on the Chrome Web Store.",
       image: "/step1.png",
     },
     {
@@ -21,7 +21,7 @@ const HowItWorks = () => {
     },
     {
       title: "Access AI Features",
-      description: "Use the ChromeX popup or keyboard shortcuts to write, edit, and improve your text.",
+      description: "Use the BrowzPot popup or keyboard shortcuts to write, edit, and improve your text.",
       image: "/step3.png",
     },
     {
@@ -42,7 +42,7 @@ const HowItWorks = () => {
           transition={{ duration: 0.6 }}
         >
           <h2>How It Works</h2>
-          <p>Get started with ChromeX in just a few simple steps</p>
+          <p>Get started with BrowzPot in just a few simple steps</p>
         </motion.div>
 
         <div className={styles.stepsContainer}>
@@ -92,7 +92,7 @@ const HowItWorks = () => {
                     <div className={styles.extensionCard}>
                       <div className={styles.extensionIcon}></div>
                       <div className={styles.extensionInfo}>
-                        <div className={styles.extensionTitle}>ChromeX AI Writing Assistant</div>
+                        <div className={styles.extensionTitle}>BrowzPot AI Writing Assistant</div>
                         <div className={styles.extensionRating}>
                           <div className={styles.stars}>★★★★★</div>
                           <span>4.9 (1,243)</span>

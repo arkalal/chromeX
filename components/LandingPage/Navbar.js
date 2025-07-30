@@ -33,7 +33,7 @@ const Navbar = () => {
           transition={{ duration: 0.6 }}
         >
           <Link href="/">
-            <span className={styles.logoText}>ChromeX</span>
+            <span className={styles.logoText}>BrowzPot</span>
           </Link>
         </motion.div>
 

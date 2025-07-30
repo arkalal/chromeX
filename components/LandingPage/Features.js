@@ -66,7 +66,7 @@ const Features = () => {
         >
           <h2>Supercharge Your Browser Experience</h2>
           <p>
-            ChromeX brings powerful AI writing and research tools wherever you
+            BrowzPot brings powerful AI writing and research tools wherever you
             browse.
           </p>
         </motion.div>
@@ -103,7 +103,7 @@ const Features = () => {
               Seamless Integration <span>with Your Workflow</span>
             </h3>
             <p>
-              ChromeX works with the tools you already use. Whether you&apos;re
+              BrowzPot works with the tools you already use. Whether you&apos;re
               drafting an email, writing a document, or researching online, our
               AI assistant is just a click away.
             </p>
@@ -146,7 +146,7 @@ const Features = () => {
             <div className={styles.floatingBox}>
               <div className={styles.floatingBoxHeader}>
                 <div className={styles.floatingBoxIcon}>
-                  <span>ChromeX</span>
+                  <span>BrowzPot</span>
                 </div>
                 <div className={styles.floatingBoxActions}>
                   <button>

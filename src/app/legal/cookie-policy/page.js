@@ -24,7 +24,7 @@ const CookiePolicy = () => {
           <section>
             <h2>1. Introduction</h2>
             <p>
-              This Cookie Policy explains how ChromeX (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) uses cookies and similar 
+              This Cookie Policy explains how BrowzPot (&quot;we&quot;, &quot;us&quot;, or &quot;our&quot;) uses cookies and similar 
               technologies to recognize you when you visit our website and use our Chrome extension. 
               It explains what these technologies are and why we use them, as well as your rights to 
               control our use of them.
@@ -39,7 +39,7 @@ const CookiePolicy = () => {
               developers to make their platforms work, or to work more efficiently, as well as to provide reporting information.
             </p>
             <p>
-              Cookies set by the website owner or application developer (in this case, ChromeX) are called 
+              Cookies set by the website owner or application developer (in this case, BrowzPot) are called 
               &quot;first-party cookies&quot;. Cookies set by parties other than the website owner are called &quot;third-party cookies&quot;. 
               Third-party cookies enable third-party features or functionality to be provided on or through the website 
               or application (such as advertising, interactive content and analytics).
@@ -91,7 +91,7 @@ const CookiePolicy = () => {
           <section>
             <h2>5. Browser Extension Storage and Access</h2>
             <p>
-              As a Chrome extension, ChromeX may also use browser storage mechanisms like localStorage, Chrome Storage API, 
+              As a Chrome extension, BrowzPot may also use browser storage mechanisms like localStorage, Chrome Storage API, 
               and IndexedDB to store information locally on your device. This storage is used to:
             </p>
             <ul>

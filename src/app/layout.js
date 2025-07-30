@@ -25,7 +25,7 @@ const sourceCodePro = Source_Code_Pro({
 });
 
 export const metadata = {
-  title: "ChromeX - AI Writing Assistant",
+  title: "BrowzPot - AI Writing Assistant",
   description: "Supercharge your browsing experience with AI writing tools and assistance",
 };
 

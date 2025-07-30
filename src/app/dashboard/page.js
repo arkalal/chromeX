@@ -40,7 +40,7 @@ const ThankYouModal = ({ type, onClose }) => {
         
         {type === 'premium' ? (
           <p>
-            Your ChromeX Premium subscription is now active. Enjoy unlimited AI writing,
+            Your BrowzPot Premium subscription is now active. Enjoy unlimited AI writing,
             advanced refinement, and 2,000 credits to start with!
           </p>
         ) : (
@@ -457,7 +457,7 @@ const DashboardContent = () => {
           </div>
           
           <div className={styles.statsFooter}>
-            Start using ChromeX features to see your usage statistics
+            Start using BrowzPot features to see your usage statistics
           </div>
         </div>
       </div>

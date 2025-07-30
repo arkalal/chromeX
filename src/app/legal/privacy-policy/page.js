@@ -24,14 +24,13 @@ const PrivacyPolicy = () => {
           <section>
             <h2>1. Introduction</h2>
             <p>
-              Welcome to ChromeX (&quot;we,&quot; &quot;our,&quot; or
-              &quot;us&quot;). We are committed to protecting your privacy and
+              Welcome to BrowzPot (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). We are committed to protecting your privacy and
               personal information. This Privacy Policy explains how we collect,
               use, disclose, and safeguard your information when you use our
               Chrome extension and related services.
             </p>
             <p>
-              By using ChromeX, you agree to the collection and use of
+              By using BrowzPot, you agree to the collection and use of
               information in accordance with this policy.
             </p>
           </section>
@@ -87,7 +86,7 @@ const PrivacyPolicy = () => {
           <section>
             <h2>4. AI Features and Data Processing</h2>
             <p>
-              ChromeX uses OpenAI&apos;s GPT-4o model to provide AI-assisted
+              BrowzPot uses OpenAI&apos;s GPT-4o model to provide AI-assisted
               writing features. When you use our AI features:
             </p>
             <ul>

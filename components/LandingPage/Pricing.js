@@ -69,7 +69,7 @@ const Pricing = () => {
   
   const plans = [
     {
-      name: "ChromeX Premium",
+      name: "BrowzPot Premium",
       description: "The complete AI writing and productivity solution.",
       monthlyPrice: 15,
       features: [
@@ -148,7 +148,7 @@ const Pricing = () => {
               </ul>
               
               <div className={styles.planAction}>
-                {plan.name === "ChromeX Premium" ? (
+                {plan.name === "BrowzPot Premium" ? (
                   userCredits?.isPremium ? (
                     <button className="btn btn-secondary" disabled>
                       Current Plan
@@ -204,7 +204,7 @@ const Pricing = () => {
           </div>
           <div className={styles.guaranteeText}>
             <h4>14-Day Money-Back Guarantee</h4>
-            <p>Try ChromeX risk-free. If you&apos;re not satisfied within the first 14 days, we&apos;ll refund your payment.</p>
+            <p>Try BrowzPot risk-free. If you&apos;re not satisfied within the first 14 days, we&apos;ll refund your payment.</p>
           </div>
         </motion.div>
       </div>
