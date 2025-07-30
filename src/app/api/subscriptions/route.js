@@ -4,30 +4,36 @@ import { auth } from "../../../../src/auth";
 import { NextResponse } from "next/server";
 import DodoPayments from 'dodopayments';
 
+// Import our payment configuration utility
+import { dodopayConfig, PAYMENT_MODE } from "../../../../lib/paymentConfig";
+
 // Initialize Dodo client
 const initDodoClient = () => {
-  const apiKey = process.env.DODO_PAYMENTS_API_KEY;
+  // In production, use the live key; otherwise use the test key
+  const apiKey = PAYMENT_MODE === 'live' 
+    ? process.env.DODO_PAYMENTS_LIVE_API_KEY 
+    : process.env.DODO_PAYMENTS_API_KEY;
   
   if (!apiKey) {
-    console.error('❌ Missing Dodo API key in environment variables');
+    console.error(`❌ Missing Dodo ${PAYMENT_MODE.toUpperCase()} API key in environment variables`);
     return null;
   }
   
   // Simple format check to ensure API key looks valid before using
   if (apiKey.length < 32) {
-    console.error('❌ Invalid Dodo API key format (too short)');
+    console.error(`❌ Invalid Dodo ${PAYMENT_MODE.toUpperCase()} API key format (too short)`);
     return null;
   }
   
   // Mask the API key for logging
   const maskedKey = apiKey.substring(0, 5) + '*****' + apiKey.substring(apiKey.length - 5);
-  console.log(`API key format check: ${maskedKey} (length: ${apiKey.length})`);
+  console.log(`${PAYMENT_MODE.toUpperCase()} API key format check: ${maskedKey} (length: ${apiKey.length})`);
   
   try {
-    // Check if key starts with 'pk_' or 'sk_' or has 'test' in it - these are standard API key prefixes
-    // You might need to adjust this based on actual Dodo API key formats
-    if (!apiKey.startsWith('pk_') && !apiKey.startsWith('sk_') && !apiKey.startsWith('dodo_') && !apiKey.includes('test')) {
-      console.warn('⚠️ API key may have incorrect format, missing expected prefix');
+    // Check if key starts with appropriate prefix based on mode
+    const expectedPrefix = PAYMENT_MODE === 'live' ? ['pk_live', 'sk_live', 'dodo_live'] : ['pk_test', 'sk_test', 'dodo_test'];
+    if (!expectedPrefix.some(prefix => apiKey.startsWith(prefix))) {
+      console.warn(`⚠️ ${PAYMENT_MODE.toUpperCase()} API key may have incorrect format, missing expected prefix`);
     }
     
     const client = new DodoPayments({
@@ -35,14 +41,14 @@ const initDodoClient = () => {
         Authorization: `Bearer ${apiKey}`
       },
       apiKey: apiKey, // Include both methods of authentication
-      environment: 'test_mode',
-      debug: true
+      environment: dodopayConfig.environment,
+      debug: dodopayConfig.debug
     });
     
-    console.log(`✅ Dodo client initialized, client.subscriptions exists: ${!!client.subscriptions}`);
+    console.log(`✅ Dodo client initialized in ${PAYMENT_MODE.toUpperCase()} mode, client.subscriptions exists: ${!!client.subscriptions}`);
     return client;
   } catch (error) {
-    console.error('❌ Failed to initialize Dodo client:', error);
+    console.error(`❌ Failed to initialize Dodo ${PAYMENT_MODE.toUpperCase()} client:`, error);
     return null;
   }
 };

@@ -11,35 +11,41 @@ const CREDIT_UNIT_PRICE = 5; // $5 per 400 credits
 // Import the Dodo Payments SDK using CommonJS pattern
 const dodopayments = require("dodopayments");
 
+// Import our payment configuration utility
+const { dodopayConfig, PAYMENT_MODE } = require("../../../../lib/paymentConfig");
+
 // The documentation might be misleading - sometimes the actual constructor is in a .default property
 // We need to check if it exists and use it if it does
 const DodoPayments = dodopayments.default || dodopayments;
 
 // Get the API key from environment - this should be the full key with prefix.secret format
-const apiKey = process.env.DODO_PAYMENTS_API_KEY;
+// In production, use the live key; otherwise use the test key
+const apiKey = PAYMENT_MODE === 'live' 
+  ? process.env.DODO_PAYMENTS_LIVE_API_KEY 
+  : process.env.DODO_PAYMENTS_API_KEY;
 
 if (!apiKey) {
-  console.error('❌ ERROR: DODO_PAYMENTS_API_KEY is missing from environment variables');
+  console.error(`❌ ERROR: ${PAYMENT_MODE.toUpperCase()} API key is missing from environment variables`);
   throw new Error('Missing API key');
 }
 
 // Log API key format (securely - only showing partial)
 const firstPart = apiKey.substring(0, 5); 
 const lastPart = apiKey.substring(apiKey.length - 5);
-console.log(`API key format check: ${firstPart}*****${lastPart} (length: ${apiKey.length})`);
+console.log(`${PAYMENT_MODE.toUpperCase()} API key format check: ${firstPart}*****${lastPart} (length: ${apiKey.length})`);
 
 // Initialize client with AUTH HEADER rather than direct param
 const client = new DodoPayments({
   headers: {
     Authorization: `Bearer ${apiKey}`
   },
-  apiKey: apiKey, // Try both approaches at once
-  environment: 'test_mode',
-  debug: true
+  apiKey: apiKey, // Include both methods of authentication
+  environment: dodopayConfig.environment,
+  debug: dodopayConfig.debug
 });
 
 // Test connection by accessing a property that should exist
-console.log('✅ Dodo client initialized, client.subscriptions exists:', !!client.subscriptions);
+console.log(`✅ Dodo client initialized in ${PAYMENT_MODE.toUpperCase()} mode, client.subscriptions exists:`, !!client.subscriptions);
 
 
 export async function GET(request) {
