@@ -9,10 +9,9 @@ import { dodopayConfig, PAYMENT_MODE } from "../../../../lib/paymentConfig";
 
 // Initialize Dodo client
 const initDodoClient = () => {
-  // In production, use the live key; otherwise use the test key
-  const apiKey = PAYMENT_MODE === 'live' 
-    ? process.env.DODO_PAYMENTS_LIVE_API_KEY 
-    : process.env.DODO_PAYMENTS_API_KEY;
+  // Using the same environment variable name in all environments
+  // The key value will be different between environments
+  const apiKey = process.env.DODO_PAYMENTS_API_KEY;
   
   if (!apiKey) {
     console.error(`❌ Missing Dodo ${PAYMENT_MODE.toUpperCase()} API key in environment variables`);

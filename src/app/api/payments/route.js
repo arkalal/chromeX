@@ -19,10 +19,9 @@ const { dodopayConfig, PAYMENT_MODE } = require("../../../../lib/paymentConfig")
 const DodoPayments = dodopayments.default || dodopayments;
 
 // Get the API key from environment - this should be the full key with prefix.secret format
-// In production, use the live key; otherwise use the test key
-const apiKey = PAYMENT_MODE === 'live' 
-  ? process.env.DODO_PAYMENTS_LIVE_API_KEY 
-  : process.env.DODO_PAYMENTS_API_KEY;
+// In Vercel, we use the same environment variable name for both modes
+// The key value itself will be different between environments
+const apiKey = process.env.DODO_PAYMENTS_API_KEY;
 
 if (!apiKey) {
   console.error(`❌ ERROR: ${PAYMENT_MODE.toUpperCase()} API key is missing from environment variables`);
