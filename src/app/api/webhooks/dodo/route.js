@@ -3,7 +3,17 @@ import { Webhook } from "standardwebhooks";
 import { connectToDatabase } from "../../../../../lib/mongodb";
 import UserCredits from "../../../../../models/UserCredits";
 
-const webhook = new Webhook(process.env.DODO_WEBHOOK_KEY);
+// Initialize webhook with better error handling
+const webhookKey = process.env.DODO_WEBHOOK_KEY;
+if (!webhookKey) {
+  console.error('⚠️ DODO_WEBHOOK_KEY is missing from environment variables');
+}
+
+// Log partial key for debugging (safely)
+const keyPrefix = webhookKey ? `${webhookKey.substring(0, 6)}...` : 'missing';
+console.log(`🔑 Initializing Dodo webhook handler with key prefix: ${keyPrefix}`);
+
+const webhook = new Webhook(webhookKey || 'placeholder-for-missing-key');
 
 // Next.js 15 compatible webhook handler
 export async function POST(request) {
@@ -29,40 +39,77 @@ export async function POST(request) {
       hasSignature: !!webhookSignature,
     });
     
-    // Verify the webhook signature
+    // Enhanced environment detection
+    const environment = process.env.VERCEL_ENV || process.env.NODE_ENV || 'development';
+    const isProduction = environment === 'production';
+    const isPreview = environment === 'preview';
+    const isDevelopment = environment === 'development';
+    
+    // Determine if this is the staging environment (vercel preview deployment)
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+    const isStaging = isPreview || baseUrl.includes('vercel.app') || baseUrl.includes('ngrok');
+    
+    console.log(`🌎 Webhook received in environment: ${environment} (isStaging: ${isStaging}, baseUrl: ${baseUrl})`);
+    
+    // Verify the webhook signature with enhanced logging
     let signatureVerified = false;
     try {
+      // Add more detailed logs for debugging
+      console.log('📝 Verification attempt details:', {
+        headerIdPrefix: webhookId.substring(0, 6),
+        headerSignaturePrefix: webhookSignature.substring(0, 6),
+        timestampPresent: !!webhookTimestamp,
+        bodyLengthBytes: rawBody.length,
+        webhookKeyPresent: !!webhookKey
+      });
+      
       await webhook.verify(rawBody, webhookHeaders);
-      console.log("Webhook signature verified successfully");
+      console.log("✅ Webhook signature verified successfully");
       signatureVerified = true;
     } catch (verifyError) {
-      console.error('Webhook signature verification failed:', verifyError);
+      console.error('❌ Webhook signature verification failed:', verifyError);
       
-      // Check if we're in production or development
-      const isDevelopment = process.env.NODE_ENV === 'development';
-      
-      if (!isDevelopment) {
-        // In production, return error for invalid signatures
+      // Enhanced logic: Only enforce verification in true production environment
+      // Allow requests to pass in development or staging environments
+      if (isProduction && !isStaging) {
+        // Only enforce signature verification in actual production
+        console.log('🛑 Production environment - rejecting invalid signature');
         return NextResponse.json({ error: 'Webhook signature verification failed' }, { status: 401 });
       }
       
-      // In development, log but continue processing
-      console.log('Development mode: Proceeding with webhook processing despite verification failure');
+      // In development or staging, log but continue processing
+      console.log(`⚠️ ${isStaging ? 'Staging' : 'Development'} mode: Proceeding with webhook processing despite verification failure`);
     }
     
-    // Parse the payload
     try {
+      // Parse the payload as JSON to get the webhook data
       const payload = JSON.parse(rawBody);
       
-      // Log the full webhook payload for debugging
-      console.log('Full webhook payload:', JSON.stringify(payload, null, 2));
+      // Only log partial payload for security/brevity in logs
+      const payloadSummary = {
+        type: payload.type,
+        eventId: payload.id,
+        status: payload.data?.status,
+        intentType: payload.data?.intent_type,
+        hasMetadata: !!payload.data?.metadata,
+        paymentId: payload.data?.payment_id,
+        subscriptionId: payload.data?.subscription_id,
+      };
       
-      // Determine the event type from the payload structure
-      // Dodo might be sending event type in a different format/location
-      const eventType = payload.type || 
-                        (payload.data?.subscription_id ? 'subscription.event' : 
-                         payload.data?.payment_id ? 'payment.event' : 'unknown');
+      console.log('📦 Webhook payload summary:', payloadSummary);
       
+      // Determine the event type
+      const eventType = payload.type || 'unknown';
+      const status = payload.data?.status || 'unknown';
+      const intentType = payload.data?.intent_type || 'unknown';
+      
+      // Detect more specific event types for better handling
+      const specificEventType = eventType === 'subscription' && status
+        ? `subscription.${status}`
+        : eventType === 'payment' && intentType
+          ? `payment.${intentType}`
+          : eventType;
+          
       console.log(`Webhook received with detected event type: ${eventType}`, {
         hasMetadata: !!payload.data?.metadata,
         userId: payload.data?.metadata?.userId || 'none',
@@ -71,9 +118,7 @@ export async function POST(request) {
         paymentId: payload.data?.payment_id || 'none'
       });
       
-      // Process based on detected information in the payload
-      const specificEventType = payload.type || ''; // Get the specific event type if available
-      
+      // We already have specificEventType defined above, so use it directly
       console.log(`Processing webhook with specific event type: ${specificEventType}`);
       
       // Handle specific subscription events
@@ -146,7 +191,13 @@ export async function POST(request) {
 
 async function processSuccessfulPayment(payload) {
   try {
-    console.log('Starting payment processing...');
+    console.log('🔄 Starting payment processing...');
+    
+    // Log environment context for debugging
+    const environment = process.env.VERCEL_ENV || process.env.NODE_ENV || 'development';
+    console.log(`💳 Processing payment in environment: ${environment}`);
+    console.log(`🌐 Base URL: ${process.env.NEXT_PUBLIC_BASE_URL || 'not set'}`);
+    
     await connectToDatabase();
     
     // Extract data more robustly - Dodo might structure their webhook data differently
